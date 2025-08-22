@@ -63,3 +63,30 @@ firebase-debug.log
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# Test files and data
+web-app/backend/test*.py
+web-app/backend/test*.txt
+web-app/backend/test*.md
+web-app/backend/test*.docx
+web-app/backend/test*.xlsx
+web-app/backend/test*.pptx
+web-app/backend/test*.ppt
+web-app/backend/test*.doc
+web-app/backend/test*.xls
+web-app/backend/test*.png
+web-app/backend/test*.jpg
+web-app/backend/test*.html
+web-app/backend/test_*/
+web-app/backend/test_documents/
+web-app/backend/firebase_storage/
+web-app/backend/app/firebase_storage/
+web-app/backend/images/screenshot*.jpg
+web-app/backend/images/screenshot*.png
+web-app/backend/screenshot*.md
+web-app/backend/simple_test.txt
+web-app/backend/create_test_pptx.py
+
+# Conversion outputs
+web-app/backend/converted/
+web-app/backend/uploads/

@@ -1,3 +1,0 @@
-This is a test Word document.
-It should be converted to Markdown.
-EOF < /dev/null
