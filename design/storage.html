@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markitdown Converter - Storage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#61dafb',
+                        secondary: '#282c34',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-secondary text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-6">
+                    <h1 class="text-3xl font-bold">Markitdown Storage</h1>
+                    <nav class="hidden md:flex space-x-4">
+                        <a href="dashboard.html" class="text-gray-300 hover:text-white transition-colors">
+                            <i class="fas fa-home mr-1"></i>ダッシュボード
+                        </a>
+                        <a href="#" class="text-primary">
+                            <i class="fas fa-database mr-1"></i>ストレージ
+                        </a>
+                    </nav>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm text-gray-300">使用容量</p>
+                        <p class="font-semibold">2.4 GB / 10 GB</p>
+                    </div>
+                    <button class="bg-primary text-secondary px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors">
+                        <i class="fas fa-cog mr-2"></i>設定
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Storage Overview -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">ストレージ使用状況</h2>
+            <div class="space-y-4">
+                <!-- Storage Bar -->
+                <div>
+                    <div class="flex justify-between text-sm text-gray-600 mb-2">
+                        <span>使用中: 2.4 GB</span>
+                        <span>24%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-500 to-primary h-full rounded-full transition-all duration-500" style="width: 24%"></div>
+                    </div>
+                </div>
+                
+                <!-- Storage Breakdown -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-blue-600">856</div>
+                        <div class="text-gray-600 text-sm mt-1">Word文書</div>
+                        <div class="text-gray-500 text-xs">1.2 GB</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-600">423</div>
+                        <div class="text-gray-600 text-sm mt-1">Excel</div>
+                        <div class="text-gray-500 text-xs">650 MB</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-red-600">234</div>
+                        <div class="text-gray-600 text-sm mt-1">PDF</div>
+                        <div class="text-gray-500 text-xs">420 MB</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-orange-600">167</div>
+                        <div class="text-gray-600 text-sm mt-1">PowerPoint</div>
+                        <div class="text-gray-500 text-xs">130 MB</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Browser -->
+        <div class="bg-white rounded-lg shadow-lg">
+            <!-- Toolbar -->
+            <div class="border-b px-6 py-4">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                    <div class="flex items-center space-x-4">
+                        <h2 class="text-xl font-bold text-gray-800">変換済みファイル</h2>
+                        <div class="flex space-x-2">
+                            <button class="text-gray-600 hover:text-gray-800 transition-colors" title="グリッド表示">
+                                <i class="fas fa-th-large"></i>
+                            </button>
+                            <button class="text-primary" title="リスト表示">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                        <!-- Search -->
+                        <div class="relative">
+                            <input type="text" placeholder="ファイルを検索..." 
+                                class="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:border-primary w-full sm:w-64">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                        
+                        <!-- Filter -->
+                        <select class="px-4 py-2 border rounded-lg focus:outline-none focus:border-primary">
+                            <option>すべてのファイル</option>
+                            <option>今日</option>
+                            <option>今週</option>
+                            <option>今月</option>
+                        </select>
+                        
+                        <!-- Sort -->
+                        <select class="px-4 py-2 border rounded-lg focus:outline-none focus:border-primary">
+                            <option>更新日時順</option>
+                            <option>ファイル名順</option>
+                            <option>サイズ順</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File List -->
+            <div class="p-6">
+                <!-- Breadcrumb -->
+                <div class="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+                    <a href="#" class="hover:text-primary transition-colors">ルート</a>
+                    <i class="fas fa-chevron-right text-xs"></i>
+                    <a href="#" class="hover:text-primary transition-colors">2024年</a>
+                    <i class="fas fa-chevron-right text-xs"></i>
+                    <span class="text-gray-800">1月</span>
+                </div>
+
+                <!-- Files Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b">
+                                <th class="text-left py-3 px-2">
+                                    <input type="checkbox" class="rounded">
+                                </th>
+                                <th class="text-left py-3 px-4 text-gray-600">ファイル名</th>
+                                <th class="text-left py-3 px-4 text-gray-600">元のファイル</th>
+                                <th class="text-left py-3 px-4 text-gray-600">サイズ</th>
+                                <th class="text-left py-3 px-4 text-gray-600">変換日時</th>
+                                <th class="text-left py-3 px-4 text-gray-600">アクション</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b hover:bg-gray-50 transition-colors">
+                                <td class="py-3 px-2">
+                                    <input type="checkbox" class="rounded">
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-file-alt text-purple-600 mr-3"></i>
+                                        <div>
+                                            <p class="font-medium text-gray-800">年次報告書2024.md</p>
+                                            <p class="text-xs text-gray-500">AI強化済み</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-file-word text-blue-600 mr-2"></i>
+                                        <span class="text-sm">年次報告書2024.docx</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 text-gray-600">245 KB</td>
+                                <td class="py-3 px-4 text-gray-600">2024/01/05 14:23</td>
+                                <td class="py-3 px-4">
+                                    <div class="flex space-x-2">
+                                        <button class="text-primary hover:text-blue-700 transition-colors" title="ダウンロード">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="text-gray-500 hover:text-gray-700 transition-colors" title="プレビュー">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="text-gray-500 hover:text-gray-700 transition-colors" title="共有">
+                                            <i class="fas fa-share-alt"></i>
+                                        </button>
+                                        <button class="text-red-500 hover:text-red-700 transition-colors" title="削除">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50 transition-colors">
+                                <td class="py-3 px-2">
+                                    <input type="checkbox" class="rounded">
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-file-alt text-purple-600 mr-3"></i>
+                                        <div>
+                                            <p class="font-medium text-gray-800">売上データ_Q4.md</p>
+                                            <p class="text-xs text-gray-500">標準変換</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-file-excel text-green-600 mr-2"></i>
+                                        <span class="text-sm">売上データ_Q4.xlsx</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 text-gray-600">189 KB</td>
+                                <td class="py-3 px-4 text-gray-600">2024/01/05 14:15</td>
+                                <td class="py-3 px-4">
+                                    <div class="flex space-x-2">
+                                        <button class="text-primary hover:text-blue-700 transition-colors" title="ダウンロード">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="text-gray-500 hover:text-gray-700 transition-colors" title="プレビュー">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="text-gray-500 hover:text-gray-700 transition-colors" title="共有">
+                                            <i class="fas fa-share-alt"></i>
+                                        </button>
+                                        <button class="text-red-500 hover:text-red-700 transition-colors" title="削除">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50 transition-colors">
+                                <td class="py-3 px-2">
+                                    <input type="checkbox" class="rounded">
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-folder text-yellow-600 mr-3"></i>
+                                        <p class="font-medium text-gray-800">プロジェクト資料</p>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 text-gray-600">-</td>
+                                <td class="py-3 px-4 text-gray-600">-</td>
+                                <td class="py-3 px-4 text-gray-600">2024/01/05 13:00</td>
+                                <td class="py-3 px-4">
+                                    <div class="flex space-x-2">
+                                        <button class="text-gray-500 hover:text-gray-700 transition-colors" title="開く">
+                                            <i class="fas fa-folder-open"></i>
+                                        </button>
+                                        <button class="text-gray-500 hover:text-gray-700 transition-colors" title="共有">
+                                            <i class="fas fa-share-alt"></i>
+                                        </button>
+                                        <button class="text-red-500 hover:text-red-700 transition-colors" title="削除">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50 transition-colors">
+                                <td class="py-3 px-2">
+                                    <input type="checkbox" class="rounded">
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-file-alt text-purple-600 mr-3"></i>
+                                        <div>
+                                            <p class="font-medium text-gray-800">契約書_最終版.md</p>
+                                            <p class="text-xs text-gray-500">AI強化済み</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-file-pdf text-red-600 mr-2"></i>
+                                        <span class="text-sm">契約書_最終版.pdf</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 text-gray-600">567 KB</td>
+                                <td class="py-3 px-4 text-gray-600">2024/01/04 16:45</td>
+                                <td class="py-3 px-4">
+                                    <div class="flex space-x-2">
+                                        <button class="text-primary hover:text-blue-700 transition-colors" title="ダウンロード">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="text-gray-500 hover:text-gray-700 transition-colors" title="プレビュー">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="text-gray-500 hover:text-gray-700 transition-colors" title="共有">
+                                            <i class="fas fa-share-alt"></i>
+                                        </button>
+                                        <button class="text-red-500 hover:text-red-700 transition-colors" title="削除">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination & Actions -->
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mt-6 space-y-4 md:space-y-0">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-gray-600">4個のアイテム</span>
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50" disabled>
+                                <i class="fas fa-trash mr-1"></i>削除
+                            </button>
+                            <button class="px-3 py-1 bg-primary text-secondary rounded hover:bg-opacity-90 transition-colors disabled:opacity-50" disabled>
+                                <i class="fas fa-download mr-1"></i>一括ダウンロード
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <button class="px-3 py-1 border rounded hover:bg-gray-100 transition-colors" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="px-3 py-1 bg-primary text-white rounded">1</button>
+                        <button class="px-3 py-1 border rounded hover:bg-gray-100 transition-colors">2</button>
+                        <button class="px-3 py-1 border rounded hover:bg-gray-100 transition-colors">3</button>
+                        <button class="px-3 py-1 border rounded hover:bg-gray-100 transition-colors">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="fixed bottom-8 right-8">
+            <button class="bg-primary text-secondary w-14 h-14 rounded-full shadow-lg hover:bg-opacity-90 transition-all hover:scale-110">
+                <i class="fas fa-plus text-xl"></i>
+            </button>
+        </div>
+    </main>
+
+    <!-- File Preview Modal (Hidden) -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" id="previewModal">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 class="text-xl font-bold text-gray-800">年次報告書2024.md</h3>
+                <button class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-auto p-6">
+                <pre class="bg-gray-50 p-4 rounded-lg text-sm">
+# 年次報告書 2024
+
+## 概要
+本報告書は、2024年度の事業活動および財務状況について報告するものです。
+
+## 主要業績指標
+- 売上高: 前年比 +15%
+- 営業利益: 前年比 +20%
+- 新規顧客獲得: 1,200社
+
+## 事業ハイライト
+### 第1四半期
+- 新製品「Markitdown Pro」のリリース
+- パートナーシップ契約 5社締結
+
+### 第2四半期
+- 海外展開の開始（アジア地域）
+- AIを活用した新機能の実装
+                </pre>
+            </div>
+            <div class="p-6 border-t bg-gray-50">
+                <div class="flex justify-between">
+                    <div class="text-sm text-gray-600">
+                        <span>サイズ: 245 KB</span>
+                        <span class="mx-2">|</span>
+                        <span>更新: 2024/01/05 14:23</span>
+                    </div>
+                    <button class="bg-primary text-secondary px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors">
+                        <i class="fas fa-download mr-2"></i>ダウンロード
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 簡単なインタラクション
+        document.addEventListener('DOMContentLoaded', function() {
+            // チェックボックスの全選択
+            const selectAll = document.querySelector('thead input[type="checkbox"]');
+            const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+            
+            selectAll?.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = this.checked);
+                updateActionButtons();
+            });
+
+            // 個別チェックボックス
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updateActionButtons);
+            });
+
+            function updateActionButtons() {
+                const checkedCount = document.querySelectorAll('tbody input[type="checkbox"]:checked').length;
+                const actionButtons = document.querySelectorAll('button[disabled]');
+                actionButtons.forEach(btn => {
+                    if (btn.textContent.includes('削除') || btn.textContent.includes('一括ダウンロード')) {
+                        btn.disabled = checkedCount === 0;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

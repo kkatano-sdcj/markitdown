@@ -1,0 +1,13 @@
+{
+  "file_id": "99663fa8-cc84-445c-a9a8-a1a619d4865f",
+  "content": "Test Document with Images\n\nThis document contains embedded images for testing.\n\n# Section 1: First Image\n\nBelow is an embedded image with text:\n\n![](data:image/png;base64...)\n\n# Section 2: Second Image\n\nAnother embedded image:\n\n![](data:image/png;base64...)\n\n## Embedded Images\n\n*Found 2 embedded images in the document*\n\n\n### Image 9\n\n**Properties:**\n- Size: 400 x 200 pixels\n- Format: PNG\n- Mode: RGB\n\n**Text extracted from image (OCR):**\n```\nn [unverified]\na [unverified]\no [unverified]\nt [unverified]\no [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ni [unverified]\ne [unverified]\ne [unverified]\n```\n\n**AI Analysis:**\n[AI Mock Description]\nThis appears to be an image from a document.\nContext: Embedded image from document, \n\nNote: This is a mock description. Configure OpenAI API key for real AI analysis.\n\n\n### Image 10\n\n**Properties:**\n- Size: 400 x 200 pixels\n- Format: PNG\n- Mode: RGB\n\n**Text extracted from image (OCR):**\n```\nn [unverified]\na [unverified]\no [unverified]\nt [unverified]\no [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ni [unverified]\ne [unverified]\ne [unverified]\n```\n\n**AI Analysis:**\n[AI Mock Description]\nThis appears to be an image from a document.\nContext: Embedded image from document, \n\nNote: This is a mock description. Configure OpenAI API key for real AI analysis.\n",
+  "metadata": {
+    "original_filename": "test_document_with_images.docx",
+    "converted_filename": "test_document_with_images_ai.md",
+    "file_size": 40518,
+    "conversion_time": 1755160085.3546484,
+    "is_url": false
+  },
+  "created_at": "2025-08-14T17:28:05.354659",
+  "updated_at": "2025-08-14T17:28:05.354684"
+}

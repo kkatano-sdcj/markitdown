@@ -1,0 +1,13 @@
+{
+  "file_id": "9ccb7977-f2a5-400a-9d33-e0360f698df3",
+  "content": "# Image File: test_image_with_text.jpg\n\n## Image Information\n\n- **Format**: JPEG\n- **Mode**: RGB\n- **Size**: 400 x 200 pixels\n\n## File Information\n\n- **File Size**: 10.10 KB\n- **File Path**: test_image_with_text.jpg\n\n## Text Content (OCR)\n\n*OCR is not available. Install Tesseract to enable text extraction from images.*\n*On Ubuntu/Debian: `sudo apt-get install tesseract-ocr`*\n*On macOS: `brew install tesseract`*\n*On Windows: Download from [GitHub](https://github.com/UB-Mannheim/tesseract/wiki)*\n\n## Image Preview\n\n![Image](data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAx...)\n\n*Note: Base64 preview truncated. Full image data available in original file.*\n\n## Alternative Processing (MarkItDown)\n\n*MarkItDown did not extract additional content from this image.*\n",
+  "metadata": {
+    "original_filename": "test_image_with_text.jpg",
+    "converted_filename": "test_image_text_output.md",
+    "file_size": 10344,
+    "conversion_time": 1755143986.831426,
+    "is_url": false
+  },
+  "created_at": "2025-08-14T12:59:46.831437",
+  "updated_at": "2025-08-14T12:59:46.831464"
+}

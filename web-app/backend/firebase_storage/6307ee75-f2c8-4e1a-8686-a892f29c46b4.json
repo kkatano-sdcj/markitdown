@@ -1,0 +1,13 @@
+{
+  "file_id": "6307ee75-f2c8-4e1a-8686-a892f29c46b4",
+  "content": "# YouTube Video\n\n## Video Link\n[Watch on YouTube](https://www.youtube.com/watch?v=L5rlPxg34gA&t=10s&pp=ygUIRmlyY3Jhd2w%3D)\n\n## Embedded Video\n[![YouTube Video](https://img.youtube.com/vi/L5rlPxg34gA/maxresdefault.jpg)](https://www.youtube.com/watch?v=L5rlPxg34gA&t=10s&pp=ygUIRmlyY3Jhd2w%3D)\n\n## Video ID\n`L5rlPxg34gA`\n\n## Notes\n- Original URL: https://www.youtube.com/watch?v=L5rlPxg34gA&t=10s&pp=ygUIRmlyY3Jhd2w%3D\n- To get transcription, you may need to use YouTube's automatic captions or a transcription service\n- Video metadata can be fetched using YouTube Data API\n",
+  "metadata": {
+    "original_filename": "https://www.youtube.com/watch?v=L5rlPxg34gA&t=10s&pp=ygUIRmlyY3Jhd2w%3D",
+    "converted_filename": "url_conversion_3d24079770c54759.md",
+    "file_size": 0,
+    "conversion_time": 1755140783.7557209,
+    "is_url": true
+  },
+  "created_at": "2025-08-14T12:06:23.755726",
+  "updated_at": "2025-08-14T12:06:23.755739"
+}

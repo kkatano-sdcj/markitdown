@@ -1,0 +1,13 @@
+{
+  "file_id": "6de0411f-80e3-45ef-af9b-2c1aaddeb271",
+  "content": "# Image File: test_ai_image.png\n\n## Image Information\n\n- **Format**: PNG\n- **Mode**: RGB\n- **Size**: 600 x 400 pixels\n\n## File Information\n\n- **File Size**: 8.29 KB\n- **File Path**: test_ai_image.png\n\n## Text Content (OCR)\n\n### Extracted Text (PaddleOCR):\n\n```\nn [unverified]\na [unverified]\no [unverified]\nt [unverified]\no [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ni [unverified]\ne [unverified]\ne [unverified]\n```\n\n## AI Image Analysis\n\n1. **Brief Description**: The image contains several lines of text formatted in a left-aligned layout, with a rectangular chart area outlined on the right.\n\n2. **Visible Text**:\n   - \"MarkItDown Converter\"\n   - \"AI Conversion Mode Test\"\n   - \"This is a test image\"\n   - \"With multiple lines of text\"\n   - \"To test OCR and AI analysis\"\n   - \"Chart Area\"\n\n3. **Type of Content**: The content is a combination of text and a simple graphical representation (a chart area).\n\n4. **Key Information or Data Points**: The text points to the purpose of the image being a test for AI conversion and analysis, while the \"Chart Area\" suggests a space designated for graphical data representation, though it is currently empty.\n\n### Chart/Graph Analysis:\n\nThe image is not a data visualization. It appears to be a test layout containing multiple lines of text and a labeled area for a chart, but there are no actual data points, graph, or chart visible. The text mentions \"MarkItDown Converter,\" \"AI Conversion Mode Test,\" and other phrases, essentially indicating that this is a test image for OCR and AI analysis.\n\n## Image Preview\n\n![Image](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAGQCAIAAAD9V4nPAAAg8ElEQVR4nO3df1DUdf7A8Tc/jmX1m7vXnaYo05wWNmauYlMJ7A8M...)\n\n*Note: Base64 preview truncated. Full image data available in original file.*\n\n## Alternative Processing (MarkItDown)\n\n*MarkItDown did not extract additional content from this image.*\n",
+  "metadata": {
+    "original_filename": "test_ai_image.png",
+    "converted_filename": "test_real_ai.md",
+    "file_size": 8489,
+    "conversion_time": 1755161370.7829437,
+    "is_url": false
+  },
+  "created_at": "2025-08-14T17:49:30.782959",
+  "updated_at": "2025-08-14T17:49:30.782988"
+}

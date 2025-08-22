@@ -1,0 +1,13 @@
+{
+  "file_id": "0ebdc6f8-3ebe-4794-a6f2-e4db535d6687",
+  "content": "<!-- Slide number: 1 -->\n# Test Presentation\nWith Embedded Images\n\n<!-- Slide number: 2 -->\n# Slide with Image\n\n![image.png](Picture2.jpg)\n\n<!-- Slide number: 3 -->\n# Another Image\n\n![image.png](Picture2.jpg)\n\n## Embedded Images\n\n*Found 2 embedded images in the document*\n\n\n### Image 1\n*Location: Slide 2*\n\n**Properties:**\n- Size: 400 x 200 pixels\n- Format: PNG\n- Mode: RGB\n\n**Text extracted from image (OCR):**\n```\nn [unverified]\na [unverified]\no [unverified]\nt [unverified]\no [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ni [unverified]\ne [unverified]\ne [unverified]\n```\n\n\n### Image 2\n*Location: Slide 3*\n\n**Properties:**\n- Size: 400 x 200 pixels\n- Format: PNG\n- Mode: RGB\n\n**Text extracted from image (OCR):**\n```\nn [unverified]\na [unverified]\no [unverified]\nt [unverified]\no [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ni [unverified]\ne [unverified]\ne [unverified]\n```\n",
+  "metadata": {
+    "original_filename": "test_presentation_with_images.pptx",
+    "converted_filename": "test_pptx_output.md",
+    "file_size": 33722,
+    "conversion_time": 1755151869.528078,
+    "is_url": false
+  },
+  "created_at": "2025-08-14T15:11:09.528093",
+  "updated_at": "2025-08-14T15:11:09.528128"
+}

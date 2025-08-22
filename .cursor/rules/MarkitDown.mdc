@@ -1,0 +1,261 @@
+---
+description: MarkItDown実装ルール - Microsoftのmarkitdownライブラリを使用したファイル変換の統一ガイドライン
+globs: ["**/*.py", "**/conversion*.py", "**/enhanced*.py"]
+alwaysApply: true
+---
+
+
+# MarkItDown実装ルール
+
+## 役割定義
+あなたはMarkItDownライブラリを使用したファイル変換システムの開発エキスパートです。
+Microsoft公式のmarkitdownライブラリ（https://github.com/microsoft/markitdown）のベストプラクティスに従い、効率的で信頼性の高い変換処理を実装します。
+
+## MarkItDownライブラリ概要
+- **目的**: 様々なファイル形式をMarkdownに変換し、LLMやテキスト分析パイプラインでの利用を最適化
+- **特徴**: 文書構造（見出し、リスト、テーブル、リンク等）を保持したMarkdown変換
+- **ライセンス**: MIT License
+- **Python要件**: Python 3.10以上
+
+## サポートファイル形式
+### 基本サポート形式
+- **Office文書**: PDF, PowerPoint (.pptx), Word (.docx), Excel (.xlsx, .xls)
+- **画像**: JPEG, PNG, GIF, BMP, WEBP（EXIF metadata + OCR対応）
+- **音声**: WAV, MP3, OGG, M4A, FLAC（metadata + 音声転写対応）
+- **Web/テキスト**: HTML, CSV, JSON, XML
+- **アーカイブ**: ZIP（内容を反復処理）
+- **その他**: YouTube URL, EPub
+
+### オプション依存関係
+```python
+# 全機能インストール
+pip install 'markitdown[all]'
+
+# 個別インストール例
+pip install 'markitdown[pdf, docx, pptx]'  # Office系のみ
+pip install 'markitdown[audio-transcription]'  # 音声転写
+pip install 'markitdown[youtube-transcription]'  # YouTube転写
+pip install 'markitdown[az-doc-intel]'  # Azure Document Intelligence
+```
+
+## 実装ガイドライン
+
+### 基本実装パターン
+```python
+from markitdown import MarkItDown
+
+# 基本使用
+md = MarkItDown(enable_plugins=False)
+result = md.convert("document.pdf")
+markdown_content = result.text_content
+
+# LLM連携（画像説明）
+from openai import OpenAI
+client = OpenAI()
+md = MarkItDown(llm_client=client, llm_model="gpt-4o")
+result = md.convert("image.jpg")
+
+# Azure Document Intelligence使用
+md = MarkItDown(docintel_endpoint="<endpoint_url>")
+result = md.convert("complex_document.pdf")
+```
+
+### エラーハンドリングパターン
+```python
+async def safe_convert_file(input_path: str) -> ConversionResult:
+    """安全なファイル変換処理"""
+    try:
+        md = MarkItDown()
+        result = md.convert(input_path)
+        
+        if not result or not result.text_content:
+            raise ValueError("変換結果が空です")
+            
+        return ConversionResult(
+            status=ConversionStatus.COMPLETED,
+            markdown_content=result.text_content
+        )
+    except FileNotFoundError:
+        logger.error(f"ファイルが見つかりません: {input_path}")
+        return ConversionResult(status=ConversionStatus.FAILED, 
+                              error_message="ファイルが見つかりません")
+    except Exception as e:
+        logger.error(f"変換エラー: {str(e)}")
+        return ConversionResult(status=ConversionStatus.FAILED,
+                              error_message=f"変換エラー: {str(e)}")
+```
+
+### ファイル形式判定と処理分岐
+```python
+def get_conversion_strategy(file_path: str) -> str:
+    """ファイル拡張子に基づく変換戦略を決定"""
+    ext = os.path.splitext(file_path)[1].lower()[1:]
+    
+    # 標準のmarkitdownで処理できる形式
+    markitdown_formats = ['pdf', 'docx', 'pptx', 'xlsx', 'html', 'txt']
+    
+    # 拡張処理が必要な形式
+    enhanced_formats = ['zip', 'json', 'csv', 'jpg', 'jpeg', 'png', 'gif']
+    
+    if ext in markitdown_formats:
+        return 'standard'
+    elif ext in enhanced_formats:
+        return 'enhanced'
+    else:
+        return 'unknown'
+```
+
+### プラグインシステム活用
+```python
+# プラグイン使用例
+md = MarkItDown(enable_plugins=True)
+
+# プラグイン一覧確認（CLI）
+# markitdown --list-plugins
+
+# プラグイン有効化（CLI）
+# markitdown --use-plugins document.pdf
+```
+
+## パフォーマンス最適化
+
+### メモリ効率化
+```python
+def process_large_file(file_path: str, chunk_size: int = 1024*1024) -> str:
+    """大容量ファイルの効率的処理"""
+    file_size = os.path.getsize(file_path)
+    
+    if file_size > 50 * 1024 * 1024:  # 50MB以上
+        logger.warning(f"大容量ファイル検出: {file_size/1024/1024:.2f}MB")
+        # ストリーミング処理またはチャンク分割を検討
+    
+    md = MarkItDown()
+    return md.convert(file_path).text_content
+```
+
+### バッチ処理最適化
+```python
+async def batch_convert_optimized(file_paths: List[str]) -> List[ConversionResult]:
+    """最適化されたバッチ変換"""
+    results = []
+    md = MarkItDown()  # インスタンスを再利用
+    
+    for file_path in file_paths:
+        try:
+            result = md.convert(file_path)
+            results.append(ConversionResult(
+                status=ConversionStatus.COMPLETED,
+                markdown_content=result.text_content
+            ))
+        except Exception as e:
+            results.append(ConversionResult(
+                status=ConversionStatus.FAILED,
+                error_message=str(e)
+            ))
+    
+    return results
+```
+
+## セキュリティ考慮事項
+
+### ファイル検証
+```python
+def validate_file_before_conversion(file_path: str) -> bool:
+    """変換前のファイル検証"""
+    # ファイルサイズ制限
+    max_size = 100 * 1024 * 1024  # 100MB
+    if os.path.getsize(file_path) > max_size:
+        raise ValueError(f"ファイルサイズが制限を超えています: {max_size/1024/1024}MB")
+    
+    # ファイル形式検証
+    allowed_extensions = {'.pdf', '.docx', '.pptx', '.xlsx', '.jpg', '.png'}
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext not in allowed_extensions:
+        raise ValueError(f"サポートされていないファイル形式: {ext}")
+    
+    return True
+```
+
+### 一時ファイル管理
+```python
+import tempfile
+import contextlib
+
+@contextlib.contextmanager
+def temporary_file_conversion(file_data: bytes, suffix: str):
+    """安全な一時ファイル処理"""
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=True) as temp_file:
+        temp_file.write(file_data)
+        temp_file.flush()
+        yield temp_file.name
+```
+
+## 品質保証
+
+### 変換結果検証
+```python
+def validate_conversion_result(result: str) -> bool:
+    """変換結果の品質検証"""
+    if not result or len(result.strip()) == 0:
+        return False
+    
+    # 基本的なMarkdown構造の確認
+    has_content = len(result.strip()) > 10
+    has_structure = any(line.startswith('#') for line in result.split('\n'))
+    
+    return has_content and has_structure
+```
+
+### ログ記録
+```python
+import logging
+
+def log_conversion_metrics(file_path: str, result: str, processing_time: float):
+    """変換メトリクスのログ記録"""
+    file_size = os.path.getsize(file_path)
+    output_size = len(result.encode('utf-8'))
+    
+    logger.info(f"変換完了: {os.path.basename(file_path)}")
+    logger.info(f"入力サイズ: {file_size/1024:.2f}KB")
+    logger.info(f"出力サイズ: {output_size/1024:.2f}KB")
+    logger.info(f"処理時間: {processing_time:.2f}秒")
+    logger.info(f"変換効率: {output_size/file_size:.2f}")
+```
+
+## 統合テスト
+
+### テストパターン
+```python
+import pytest
+
+def test_supported_formats():
+    """サポート形式のテスト"""
+    md = MarkItDown()
+    test_files = [
+        'sample.pdf', 'sample.docx', 'sample.pptx', 
+        'sample.xlsx', 'sample.jpg', 'sample.html'
+    ]
+    
+    for file_path in test_files:
+        if os.path.exists(file_path):
+            result = md.convert(file_path)
+            assert result.text_content is not None
+            assert len(result.text_content) > 0
+
+def test_error_handling():
+    """エラーハンドリングのテスト"""
+    md = MarkItDown()
+    
+    with pytest.raises(FileNotFoundError):
+        md.convert('nonexistent.pdf')
+```
+
+## 追加指示
+- markitdownライブラリの最新バージョン（0.1.2）の機能を最大限活用
+- 変換結果はLLM処理に最適化されたMarkdown形式で出力
+- メモリ効率とパフォーマンスを重視した実装
+- エラー処理とロギングを徹底
+- セキュリティとファイル検証を必須実装
+- 大容量ファイルやバッチ処理に対応した設計
+- プラグインシステムの活用を検討
+- Azure Document IntelligenceやOpenAI連携の適切な実装

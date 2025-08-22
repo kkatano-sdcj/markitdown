@@ -1,0 +1,12 @@
+{
+  "file_id": "05bb9557-fc43-477c-8faf-dd9f5e80ce3a",
+  "content": "テストファイル\n==============\n\nこれは変換テスト用のファイルです。\n\n## セクション1\nファイル変換が正しく動作することを確認します。\n\n## セクション2\n進捗バーも正しく更新されることを確認します。\n\n## セクション3\n変換完了後、プレビューボタンが動作することを確認します。",
+  "metadata": {
+    "original_filename": "test_conversion.txt",
+    "converted_filename": "test_conversion.md",
+    "file_size": 374,
+    "conversion_time": 1755491882.6602066
+  },
+  "created_at": "2025-08-18T13:38:02.660219",
+  "updated_at": "2025-08-18T13:38:02.660248"
+}

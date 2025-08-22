@@ -1,0 +1,1197 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+# データベース開発ルール
+
+## 役割定義
+あなたはデータベース設計・最適化のエキスパートです。
+専門分野：RDBMSとNoSQLの設計、クエリ最適化、データモデリング、パフォーマンスチューニング
+
+## 技術スタック
+- **RDBMS**: Supabase (PostgreSQL 15)
+- **NoSQL**: Firebase Firestore
+- **キャッシュ**: Redis 7
+- **ベクトルDB**: ChromaDB
+- **マイグレーション**: Supabase Migrations, Firebase Security Rules
+- **ORM**: Supabase Client (JavaScript/Python)
+- **ODM**: Firebase Admin SDK
+
+## 命名規則とコーディング標準
+
+### Supabase命名規則
+```sql
+-- テーブル: 複数形、snake_case
+-- カラム: snake_case
+-- 主キー: id (UUID型、Supabaseのgen_random_uuid()使用)
+-- 外部キー: <参照テーブル名>_id
+-- インデックス: idx_<テーブル名>_<カラム名>
+-- 制約: <テーブル名>_<カラム名>_<制約種別>
+-- RLS (Row Level Security): 必須で適用
+
+-- 良い例
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT users_email_unique UNIQUE (email)
+);
+
+-- RLS有効化
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+-- インデックス作成
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_created_at ON users(created_at DESC);
+
+-- 更新時刻自動更新のトリガー
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_users_updated_at
+    BEFORE UPDATE ON users
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_updated_at_column();
+```
+
+### Firebase Firestore命名規則
+```javascript
+// コレクション: 複数形、camelCase
+// ドキュメントID: 自動生成または意味のあるID
+// フィールド: camelCase
+// サブコレクション: 適切な階層構造
+// セキュリティルール: 必須
+
+// 良い例
+// コレクション構造
+// /users/{userId}
+// /chatSessions/{sessionId}
+// /chatSessions/{sessionId}/messages/{messageId}
+
+// Firestore セキュリティルール例
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ユーザーは自分のデータのみアクセス可能
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // チャットセッションのアクセス制御
+    match /chatSessions/{sessionId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+        
+      match /messages/{messageId} {
+        allow read, write: if request.auth != null && 
+          request.auth.uid == get(/databases/$(database)/documents/chatSessions/$(sessionId)).data.userId;
+      }
+    }
+  }
+}
+
+// 複合インデックス作成（Firebase Console または CLI）
+// gcloud firestore indexes composite create \
+//   --collection-group=chatSessions \
+//   --field-config field-path=userId,order=ascending \
+//   --field-config field-path=createdAt,order=descending
+```
+
+## データモデル設計
+
+### Supabase - リレーショナルデータ
+
+```sql
+-- ==================== ユーザー管理 ====================
+-- Supabase Authのユーザーテーブルを拡張
+CREATE TABLE profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    avatar_url TEXT,
+    department VARCHAR(100),
+    role VARCHAR(50) NOT NULL CHECK (role IN ('admin', 'support', 'viewer')),
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    preferences JSONB NOT NULL DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    CONSTRAINT profiles_email_unique UNIQUE (email)
+);
+
+-- RLSポリシー
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own profile" ON profiles
+    FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can update own profile" ON profiles
+    FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Only service role can insert profiles" ON profiles
+    FOR INSERT WITH CHECK (true); -- サービスロールでのみ実行
+
+-- ==================== チャットセッション ====================
+CREATE TABLE chat_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    started_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    ended_at TIMESTAMP WITH TIME ZONE,
+    total_messages INTEGER NOT NULL DEFAULT 0,
+    resolved BOOLEAN,
+    satisfaction_score INTEGER CHECK (satisfaction_score BETWEEN 1 AND 5),
+    metadata JSONB NOT NULL DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE chat_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage own sessions" ON chat_sessions
+    FOR ALL USING (auth.uid() = user_id);
+
+-- ==================== メッセージ履歴 ====================
+CREATE TABLE messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+    role VARCHAR(20) NOT NULL CHECK (role IN ('user', 'assistant')),
+    content TEXT NOT NULL,
+    response_type VARCHAR(20) CHECK (response_type IN ('faq', 'ai', 'error')),
+    confidence_score DECIMAL(3,2) CHECK (confidence_score BETWEEN 0 AND 1),
+    processing_time_ms INTEGER CHECK (processing_time_ms >= 0),
+    metadata JSONB NOT NULL DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage own messages" ON messages
+    FOR ALL USING (
+        auth.uid() = (
+            SELECT user_id FROM chat_sessions 
+            WHERE id = messages.session_id
+        )
+    );
+
+-- ==================== 監査ログ ====================
+CREATE TABLE audit_logs (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    action VARCHAR(100) NOT NULL,
+    resource_type VARCHAR(50),
+    resource_id VARCHAR(255),
+    details JSONB NOT NULL DEFAULT '{}',
+    ip_address INET,
+    user_agent TEXT,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Only admins can view audit logs" ON audit_logs
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM profiles 
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+-- パーティショニング設定（大規模データ対応）
+CREATE TABLE audit_logs_2025_01 PARTITION OF audit_logs
+    FOR VALUES FROM ('2025-01-01') TO ('2025-02-01');
+
+-- ベクトルデータ用テーブル（ChromaDB連携）
+CREATE TABLE document_embeddings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    document_id VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    metadata JSONB NOT NULL DEFAULT '{}',
+    chroma_collection_name VARCHAR(255) NOT NULL,
+    chroma_document_id VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX idx_document_embeddings_chroma ON document_embeddings(chroma_collection_name, chroma_document_id);
+
+-- 更新トリガーの適用
+CREATE TRIGGER update_profiles_updated_at
+    BEFORE UPDATE ON profiles
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_updated_at_column();
+
+CREATE TRIGGER update_chat_sessions_updated_at
+    BEFORE UPDATE ON chat_sessions
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_updated_at_column();
+
+CREATE TRIGGER update_document_embeddings_updated_at
+    BEFORE UPDATE ON document_embeddings
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_updated_at_column();
+```
+
+### Firebase Firestore - ドキュメントデータ
+
+```javascript
+// FAQコレクション設計
+// コレクションパス: /faqs/{faqId}
+{
+  // ドキュメント構造
+  question: "string",              // FAQ質問文
+  answer: "string",                // FAQ回答文
+  category: "string",              // "authentication" | "billing" | "technical" | "general"
+  subcategory: "string",           // サブカテゴリ
+  tags: ["string"],               // タグ配列
+  
+  // メタデータ
+  createdBy: "string",             // 作成者ID
+  createdAt: "timestamp",          // Firestore Timestamp
+  updatedAt: "timestamp",          // Firestore Timestamp
+  version: "number",               // バージョン番号
+  isActive: "boolean",             // 有効フラグ
+  
+  // 統計情報
+  viewCount: "number",             // 閲覧回数
+  helpfulCount: "number",          // 役に立った数
+  notHelpfulCount: "number",       // 役に立たなかった数
+  
+  // ChromaDB連携情報
+  chromaCollectionName: "string",  // ChromaDBコレクション名
+  chromaDocumentId: "string"       // ChromaDBドキュメントID
+}
+
+// ナレッジベースコレクション設計
+// コレクションパス: /knowledgeBase/{documentId}
+{
+  title: "string",                 // ドキュメントタイトル
+  content: "string",               // フルテキスト内容
+  documentType: "string",          // "manual" | "guide" | "policy" | "tutorial" | "reference"
+  source: "string",                // ソースURLまたはパス
+  
+  // メタデータ
+  createdBy: "string",
+  createdAt: "timestamp",
+  updatedAt: "timestamp",
+  version: "number",
+  isActive: "boolean",
+  
+  // ChromaDB連携情報
+  chromaCollectionName: "string",
+  chromaDocumentIds: ["string"],   // チャンク化されたIDの配列
+  
+  // チャンク情報（必要に応じてサブコレクションとして管理）
+  chunks: [
+    {
+      chunkId: "string",
+      content: "string",            // チャンク内容（最大1000文字）
+      chromaDocumentId: "string",   // ChromaDBドキュメントID
+      metadata: {
+        pageNumber: "number",
+        section: "string"
+      }
+    }
+  ]
+}
+
+// ユーザーアクティビティコレクション
+// コレクションパス: /userActivities/{userId}
+{
+  userId: "string",
+  lastActiveAt: "timestamp",
+  totalSessions: "number",
+  totalMessages: "number",
+  averageSatisfaction: "number",
+  
+  // 最近のアクティビティ
+  recentSessions: [
+    {
+      sessionId: "string",
+      startedAt: "timestamp",
+      endedAt: "timestamp",
+      messageCount: "number",
+      resolved: "boolean"
+    }
+  ],
+  
+  // セキュリティルールでのアクセス制御
+  // 上記のrules例を参照
+}
+
+// サブコレクション例: メッセージ
+// /chatSessions/{sessionId}/messages/{messageId}
+{
+  role: "string",                  // "user" | "assistant"
+  content: "string",
+  responseType: "string",          // "faq" | "ai" | "error"
+  confidenceScore: "number",       // 0.0 - 1.0
+  processingTimeMs: "number",
+  metadata: {
+    model: "string",
+    tokens: "number",
+    temperature: "number"
+  },
+  createdAt: "timestamp"
+}
+```
+
+## インデックス戦略
+
+### Supabaseインデックス
+```sql
+-- ==================== 基本インデックス ====================
+-- 頻繁に検索されるカラム
+CREATE INDEX idx_profiles_email ON profiles(email);
+CREATE INDEX idx_profiles_role ON profiles(role);
+CREATE INDEX idx_chat_sessions_user_id ON chat_sessions(user_id);
+CREATE INDEX idx_messages_session_id ON messages(session_id);
+CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX idx_document_embeddings_document_id ON document_embeddings(document_id);
+
+-- 時系列データ用インデックス（降順）
+CREATE INDEX idx_profiles_created_at ON profiles(created_at DESC);
+CREATE INDEX idx_chat_sessions_created_at ON chat_sessions(created_at DESC);
+CREATE INDEX idx_messages_created_at ON messages(created_at DESC);
+CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at DESC);
+CREATE INDEX idx_document_embeddings_created_at ON document_embeddings(created_at DESC);
+
+-- ==================== 複合インデックス ====================
+-- よく一緒に使われるカラムの組み合わせ
+CREATE INDEX idx_messages_session_role ON messages(session_id, role);
+CREATE INDEX idx_chat_sessions_user_resolved ON chat_sessions(user_id, resolved) 
+    WHERE resolved IS NOT NULL;
+CREATE INDEX idx_profiles_role_active ON profiles(role, is_active) 
+    WHERE is_active = true;
+CREATE INDEX idx_chat_sessions_user_timerange ON chat_sessions(user_id, created_at DESC, ended_at);
+
+-- ==================== 部分インデックス ====================
+-- 特定条件のレコードのみインデックス化（容量削減）
+CREATE INDEX idx_active_profiles ON profiles(email) WHERE is_active = true;
+CREATE INDEX idx_unresolved_sessions ON chat_sessions(user_id, created_at DESC) 
+    WHERE resolved = false OR resolved IS NULL;
+CREATE INDEX idx_recent_sessions ON chat_sessions(user_id, started_at DESC) 
+    WHERE started_at > NOW() - INTERVAL '30 days';
+
+-- ==================== GINインデックス ====================
+-- JSONB検索用
+CREATE INDEX idx_sessions_metadata_gin ON chat_sessions USING GIN (metadata);
+CREATE INDEX idx_messages_metadata_gin ON messages USING GIN (metadata);
+CREATE INDEX idx_profiles_preferences_gin ON profiles USING GIN (preferences);
+CREATE INDEX idx_document_embeddings_metadata_gin ON document_embeddings USING GIN (metadata);
+
+-- 特定のJSONBパスに対するインデックス
+CREATE INDEX idx_sessions_department ON chat_sessions 
+    USING btree ((metadata->>'department'));
+CREATE INDEX idx_profiles_theme ON profiles 
+    USING btree ((preferences->>'theme'));
+
+-- ==================== フルテキスト検索インデックス ====================
+-- PostgreSQLのfts機能を利用
+CREATE INDEX idx_document_embeddings_content_fts 
+    ON document_embeddings 
+    USING GIN (to_tsvector('japanese', content));
+
+-- RLSポリシーのパフォーマンス最適化用インデックス
+CREATE INDEX idx_messages_session_auth ON messages(session_id) 
+    WHERE session_id IN (
+        SELECT id FROM chat_sessions 
+        WHERE user_id = current_setting('request.jwt.claims', true)::json->>'sub'
+    );
+```
+
+### Firebase Firestoreインデックス
+```javascript
+// ==================== 単一フィールドインデックス ====================
+// Firebase ConsoleまたはCLIで作成
+
+// FAQコレクションのインデックス
+// gcloud firestore indexes fields create \
+//   --collection-group=faqs \
+//   --field-path=category
+
+// gcloud firestore indexes fields create \
+//   --collection-group=faqs \
+//   --field-path=createdAt \
+//   --order=descending
+
+// gcloud firestore indexes fields create \
+//   --collection-group=faqs \
+//   --field-path=viewCount \
+//   --order=descending
+
+// gcloud firestore indexes fields create \
+//   --collection-group=faqs \
+//   --field-path=isActive
+
+// ==================== 複合インデックス ====================
+// カテゴリ別の人気FAQ検索用
+// gcloud firestore indexes composite create \
+//   --collection-group=faqs \
+//   --field-config field-path=category,order=ascending \
+//   --field-config field-path=isActive,order=ascending \
+//   --field-config field-path=viewCount,order=descending
+
+// ユーザー別チャットセッション検索用
+// gcloud firestore indexes composite create \
+//   --collection-group=chatSessions \
+//   --field-config field-path=userId,order=ascending \
+//   --field-config field-path=createdAt,order=descending
+
+// 未解決セッション検索用
+// gcloud firestore indexes composite create \
+//   --collection-group=chatSessions \
+//   --field-config field-path=userId,order=ascending \
+//   --field-config field-path=resolved,order=ascending \
+//   --field-config field-path=createdAt,order=descending
+
+// メッセージ検索用（サブコレクション）
+// gcloud firestore indexes composite create \
+//   --collection-group=messages \
+//   --field-config field-path=role,order=ascending \
+//   --field-config field-path=createdAt,order=descending
+
+// ==================== 配列フィールドインデックス ====================
+// タグでの検索用
+// gcloud firestore indexes fields create \
+//   --collection-group=faqs \
+//   --field-path=tags \
+//   --array-config
+
+// ==================== firestore.indexes.json例 ====================
+// {
+//   "indexes": [
+//     {
+//       "collectionGroup": "faqs",
+//       "queryScope": "COLLECTION",
+//       "fields": [
+//         { "fieldPath": "category", "order": "ASCENDING" },
+//         { "fieldPath": "isActive", "order": "ASCENDING" },
+//         { "fieldPath": "viewCount", "order": "DESCENDING" }
+//       ]
+//     },
+//     {
+//       "collectionGroup": "chatSessions",
+//       "queryScope": "COLLECTION",
+//       "fields": [
+//         { "fieldPath": "userId", "order": "ASCENDING" },
+//         { "fieldPath": "createdAt", "order": "DESCENDING" }
+//       ]
+//     },
+//     {
+//       "collectionGroup": "messages",
+//       "queryScope": "COLLECTION_GROUP",
+//       "fields": [
+//         { "fieldPath": "role", "order": "ASCENDING" },
+//         { "fieldPath": "createdAt", "order": "DESCENDING" }
+//       ]
+//     }
+//   ],
+//   "fieldOverrides": [
+//     {
+//       "collectionGroup": "faqs",
+//       "fieldPath": "tags",
+//       "indexes": [
+//         { "arrayConfig": "CONTAINS" }
+//       ]
+//     }
+//   ]
+// }
+
+// ==================== ChromaDB連携インデックス ====================
+// ChromaDBドキュメントIDでの検索用
+// gcloud firestore indexes fields create \
+//   --collection-group=faqs \
+//   --field-path=chromaDocumentId
+
+// gcloud firestore indexes fields create \
+//   --collection-group=knowledgeBase \
+//   --field-path=chromaCollectionName
+```
+
+## パフォーマンス最適化
+
+### Supabase最適化
+
+```sql
+-- ==================== ビューの活用 ====================
+-- マテリアライズドビューで集計処理を高速化
+CREATE MATERIALIZED VIEW user_activity_summary AS
+SELECT 
+    p.id,
+    p.email,
+    p.name,
+    COUNT(DISTINCT cs.id) as total_sessions,
+    COUNT(m.id) as total_messages,
+    MAX(cs.created_at) as last_session_at,
+    AVG(cs.satisfaction_score) as avg_satisfaction,
+    p.role,
+    p.department
+FROM profiles p
+LEFT JOIN chat_sessions cs ON p.id = cs.user_id
+LEFT JOIN messages m ON cs.id = m.session_id
+WHERE p.is_active = true
+GROUP BY p.id, p.email, p.name, p.role, p.department;
+
+-- RLS有効化
+ALTER TABLE user_activity_summary ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own activity summary" ON user_activity_summary
+    FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Admins can view all activity summaries" ON user_activity_summary
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM profiles 
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+-- インデックス作成
+CREATE UNIQUE INDEX idx_user_activity_summary_id ON user_activity_summary(id);
+CREATE INDEX idx_user_activity_summary_role ON user_activity_summary(role);
+
+-- 定期的なリフレッシュ（Supabase Edge Functionsで実行）
+REFRESH MATERIALIZED VIEW CONCURRENTLY user_activity_summary;
+
+-- ==================== パーティショニング ====================
+-- 大量データのテーブルを月単位でパーティション分割
+CREATE TABLE messages_partitioned (
+    LIKE messages INCLUDING ALL
+) PARTITION BY RANGE (created_at);
+
+-- 月別パーティション作成（Supabase CLIで自動化）
+CREATE TABLE messages_2025_01 PARTITION OF messages_partitioned
+    FOR VALUES FROM ('2025-01-01') TO ('2025-02-01');
+
+-- ==================== RLS最適化 ====================
+-- RLSポリシーのパフォーマンス最適化
+CREATE OR REPLACE FUNCTION auth.user_id() RETURNS UUID AS $$
+    SELECT COALESCE(
+        current_setting('request.jwt.claims', true)::json->>'sub',
+        (current_setting('request.jwt.claims', true)::json->>'role')
+    )::UUID;
+$$ LANGUAGE SQL STABLE;
+
+-- ==================== クエリ最適化 ====================
+-- EXPLAINを使用した実行計画の確認
+EXPLAIN (ANALYZE, BUFFERS) 
+SELECT cs.*, 
+       array_agg(m.content ORDER BY m.created_at) as messages
+FROM chat_sessions cs
+JOIN messages m ON cs.id = m.session_id
+WHERE cs.user_id = auth.uid() 
+  AND cs.created_at >= CURRENT_DATE - INTERVAL '7 days'
+GROUP BY cs.id
+ORDER BY cs.created_at DESC;
+
+-- ==================== Supabase固有最適化 ====================
+-- PostgRESTパフォーマンス最適化
+-- 適切なselectとlimitの使用
+-- SELECT id, name, email FROM profiles WHERE role = 'admin' LIMIT 50;
+
+-- Supabase Realtime最適化
+-- 必要なテーブルのみリアルタイム有効化
+ALTER PUBLICATION supabase_realtime ADD TABLE chat_sessions;
+ALTER PUBLICATION supabase_realtime ADD TABLE messages;
+
+-- コネクションプール設定
+-- supabase/config.tomlで設定
+-- [db]
+-- pool_size = 15
+-- max_client_conn = 100
+```
+
+### Firebase Firestore最適化
+
+```javascript
+// ==================== クエリ最適化 ====================
+// 人気FAQの効率的な取得
+const getFAQsByCategory = async (category, limit = 10) => {
+  const query = db.collection('faqs')
+    .where('category', '==', category)
+    .where('isActive', '==', true)
+    .orderBy('viewCount', 'desc')
+    .limit(limit);
+  
+  // クエリスナップショットの再利用
+  const snapshot = await query.get();
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+};
+
+// ページネーションの実装
+const getPaginatedFAQs = async (lastDoc = null, pageSize = 20) => {
+  let query = db.collection('faqs')
+    .where('isActive', '==', true)
+    .orderBy('createdAt', 'desc')
+    .limit(pageSize);
+  
+  if (lastDoc) {
+    query = query.startAfter(lastDoc);
+  }
+  
+  const snapshot = await query.get();
+  return {
+    docs: snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })),
+    lastDoc: snapshot.docs[snapshot.docs.length - 1],
+    hasMore: snapshot.docs.length === pageSize
+  };
+};
+
+// ==================== バッチ操作 ====================
+// 大量更新の効率化
+const updateFAQsInBatch = async (updates) => {
+  const batch = db.batch();
+  const BATCH_SIZE = 500; // Firestoreの上限
+  
+  for (let i = 0; i < updates.length; i += BATCH_SIZE) {
+    const currentBatch = updates.slice(i, i + BATCH_SIZE);
+    
+    currentBatch.forEach(update => {
+      const docRef = db.collection('faqs').doc(update.id);
+      batch.update(docRef, {
+        viewCount: admin.firestore.FieldValue.increment(1),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        version: admin.firestore.FieldValue.increment(1)
+      });
+    });
+    
+    await batch.commit();
+  }
+};
+
+// ==================== キャッシュ戦略 ====================
+// クライアントサイドキャッシュ
+const enableOfflineCache = () => {
+  db.enablePersistence({
+    synchronizeTabs: true
+  }).catch(err => {
+    if (err.code === 'failed-precondition') {
+      console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+    } else if (err.code === 'unimplemented') {
+      console.warn('The current browser does not support all of the features required to enable persistence');
+    }
+  });
+};
+
+// ==================== リアルタイムリスナー最適化 ====================
+// 特定フィールドのみ監視
+const subscribeToUserSessions = (userId, callback) => {
+  return db.collection('chatSessions')
+    .where('userId', '==', userId)
+    .where('createdAt', '>', new Date(Date.now() - 24 * 60 * 60 * 1000)) // 過去24時間
+    .orderBy('createdAt', 'desc')
+    .limit(10)
+    .onSnapshot({
+      includeMetadataChanges: false // メデータデータ変更を除外
+    }, callback);
+};
+
+// ==================== ChromaDB連携最適化 ====================
+const syncWithChromaDB = async (faqId, content) => {
+  try {
+    // ChromaDBにドキュメント追加
+    const chromaResponse = await chromaClient.addDocuments({
+      collection_name: 'faqs',
+      documents: [content],
+      metadatas: [{ faqId, source: 'firestore' }],
+      ids: [faqId]
+    });
+    
+    // FirestoreにChromaDB情報を更新
+    await db.collection('faqs').doc(faqId).update({
+      chromaDocumentId: faqId,
+      chromaCollectionName: 'faqs',
+      syncedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    return chromaResponse;
+  } catch (error) {
+    console.error('ChromaDB sync failed:', error);
+    throw error;
+  }
+};
+```
+
+## トランザクション管理
+
+### Supabaseトランザクション
+```python
+# Supabase Python Client トランザクション
+from supabase import create_client, Client
+from typing import Dict, Any
+import asyncio
+
+async def create_session_with_message(user_id: str, message: str) -> Dict[str, Any]:
+    supabase: Client = create_client(supabase_url, supabase_key)
+    
+    try:
+        # Supabaseはrpcでストアドプロシージャを使用してトランザクション実行
+        result = supabase.rpc('create_session_with_message', {
+            'p_user_id': user_id,
+            'p_message': message
+        }).execute()
+        
+        return result.data
+    except Exception as e:
+        print(f"Transaction failed: {e}")
+        raise
+
+# PostgreSQLストアドプロシージャ例
+# CREATE OR REPLACE FUNCTION create_session_with_message(
+#     p_user_id UUID,
+#     p_message TEXT
+# ) RETURNS JSON AS $$
+# DECLARE
+#     v_session_id UUID;
+#     v_message_id UUID;
+#     result JSON;
+# BEGIN
+#     -- チャットセッション作成
+#     INSERT INTO chat_sessions (user_id)
+#     VALUES (p_user_id)
+#     RETURNING id INTO v_session_id;
+#     
+#     -- メッセージ作成
+#     INSERT INTO messages (session_id, role, content)
+#     VALUES (v_session_id, 'user', p_message)
+#     RETURNING id INTO v_message_id;
+#     
+#     -- 監査ログ記録
+#     INSERT INTO audit_logs (user_id, action, resource_type, resource_id)
+#     VALUES (p_user_id, 'session_created', 'chat_session', v_session_id::TEXT);
+#     
+#     -- 結果返却
+#     SELECT json_build_object(
+#         'session_id', v_session_id,
+#         'message_id', v_message_id
+#     ) INTO result;
+#     
+#     RETURN result;
+# EXCEPTION
+#     WHEN OTHERS THEN
+#         RAISE EXCEPTION 'Transaction failed: %', SQLERRM;
+# END;
+# $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+# JavaScript/TypeScript例
+const createSessionWithMessage = async (userId: string, message: string) => {
+  const { data, error } = await supabase
+    .rpc('create_session_with_message', {
+      p_user_id: userId,
+      p_message: message
+    })
+  
+  if (error) throw error
+  return data
+}
+```
+
+### Firebase Firestoreトランザクション
+```javascript
+// Firebase Firestoreトランザクション
+const admin = require('firebase-admin');
+const db = admin.firestore();
+
+async function updateFAQWithHistory(faqId, updates, userId) {
+  const transaction = db.runTransaction(async (t) => {
+    // FAQドキュメント参照
+    const faqRef = db.collection('faqs').doc(faqId);
+    const faqDoc = await t.get(faqRef);
+    
+    if (!faqDoc.exists) {
+      throw new Error('FAQ not found');
+    }
+    
+    const currentData = faqDoc.data();
+    
+    // FAQ更新
+    t.update(faqRef, {
+      ...updates,
+      version: admin.firestore.FieldValue.increment(1),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    // 変更履歴を記録（サブコレクション）
+    const historyRef = faqRef.collection('history').doc();
+    t.set(historyRef, {
+      changes: updates,
+      previousData: currentData,
+      changedBy: userId,
+      changedAt: admin.firestore.FieldValue.serverTimestamp(),
+      changeType: 'update'
+    });
+    
+    return { faqId, historyId: historyRef.id };
+  });
+  
+  try {
+    const result = await transaction;
+    console.log('Transaction successfully committed:', result);
+    return result;
+  } catch (error) {
+    console.error('Transaction failed:', error);
+    throw error;
+  }
+}
+
+// 複数コレクションを跨いだトランザクション
+async function createChatSessionWithMessage(userId, message) {
+  const transaction = db.runTransaction(async (t) => {
+    // チャットセッション作成
+    const sessionRef = db.collection('chatSessions').doc();
+    t.set(sessionRef, {
+      userId: userId,
+      startedAt: admin.firestore.FieldValue.serverTimestamp(),
+      totalMessages: 1,
+      resolved: false,
+      metadata: {}
+    });
+    
+    // 初回メッセージ作成
+    const messageRef = sessionRef.collection('messages').doc();
+    t.set(messageRef, {
+      role: 'user',
+      content: message,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    // ユーザーアクティビティ更新
+    const userActivityRef = db.collection('userActivities').doc(userId);
+    t.set(userActivityRef, {
+      lastActiveAt: admin.firestore.FieldValue.serverTimestamp(),
+      totalSessions: admin.firestore.FieldValue.increment(1),
+      totalMessages: admin.firestore.FieldValue.increment(1)
+    }, { merge: true });
+    
+    return {
+      sessionId: sessionRef.id,
+      messageId: messageRef.id
+    };
+  });
+  
+  return await transaction;
+}
+
+// バッチ処理とトランザクションの組み合わせ
+async function bulkUpdateWithTransaction(updates) {
+  const batchSize = 500; // Firestoreの上限
+  const chunks = [];
+  
+  for (let i = 0; i < updates.length; i += batchSize) {
+    chunks.push(updates.slice(i, i + batchSize));
+  }
+  
+  const results = [];
+  
+  for (const chunk of chunks) {
+    const transaction = db.runTransaction(async (t) => {
+      const promises = chunk.map(update => {
+        const docRef = db.collection(update.collection).doc(update.id);
+        return t.update(docRef, update.data);
+      });
+      
+      return Promise.all(promises);
+    });
+    
+    results.push(await transaction);
+  }
+  
+  return results;
+}
+```
+
+## バックアップとリカバリ
+
+### バックアップ戦略
+```bash
+#!/bin/bash
+# Supabase & Firebase バックアップスクリプト
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/backup/databases"
+
+# Supabaseバックアップ（PostgreSQL）
+# Supabase CLIを使用
+supabase db dump --db-url "$SUPABASE_DB_URL" \
+  --file "${BACKUP_DIR}/supabase_${DATE}.sql"
+
+# またはpg_dumpで直接バックアップ
+pg_dump "$SUPABASE_DB_URL" \
+  --format=custom \
+  --file="${BACKUP_DIR}/supabase_${DATE}.dump" \
+  --verbose
+
+# Firebase Firestoreバックアップ
+# gcloudコマンドでエクスポート
+gcloud firestore export gs://${PROJECT_ID}-backup/firestore_${DATE} \
+  --project=${PROJECT_ID}
+
+# ChromaDBバックアップ（ローカルインスタンスの場合）
+if [ -d "$CHROMA_DATA_DIR" ]; then
+  tar -czf "${BACKUP_DIR}/chromadb_${DATE}.tar.gz" "$CHROMA_DATA_DIR"
+fi
+
+# ChromaDBクラウドサービスの場合はサービス提供者のバックアップ機能を使用
+
+# バックアップをクラウドストレージにアップロード
+# Google Cloud Storage
+gsutil -m cp -r "${BACKUP_DIR}/" "gs://${BACKUP_BUCKET}/database-backups/${DATE}/"
+
+# AWS S3 (代替手段)
+# aws s3 sync ${BACKUP_DIR} s3://your-backup-bucket/database-backups/${DATE}/
+
+# 古いバックアップの清理（30日以上古いファイルを削除）
+find ${BACKUP_DIR} -type f -mtime +30 -delete
+
+echo "Backup completed: ${DATE}"
+```
+
+## モニタリングとメンテナンス
+
+### Supabase監視クエリ
+```sql
+-- スロークエリの特定（pg_stat_statements拡張機能が必要）
+SELECT 
+    query,
+    calls,
+    total_exec_time,
+    mean_exec_time,
+    max_exec_time,
+    rows
+FROM pg_stat_statements
+WHERE mean_exec_time > 100  -- 100ms以上
+ORDER BY mean_exec_time DESC
+LIMIT 20;
+
+-- テーブルサイズとインデックス使用率
+SELECT 
+    schemaname,
+    tablename,
+    pg_size_pretty(pg_total_relation_size(tablename::regclass)) as size,
+    n_live_tup as row_count,
+    n_dead_tup as dead_rows,
+    last_vacuum,
+    last_analyze,
+    pg_size_pretty(pg_relation_size(tablename::regclass)) as table_size,
+    pg_size_pretty(pg_total_relation_size(tablename::regclass) - pg_relation_size(tablename::regclass)) as index_size
+FROM pg_stat_user_tables
+WHERE schemaname NOT IN ('information_schema', 'pg_catalog', 'auth', 'storage', 'supabase_functions')
+ORDER BY pg_total_relation_size(tablename::regclass) DESC;
+
+-- RLSポリシーのパフォーマンス確認
+SELECT 
+    schemaname,
+    tablename,
+    rowsecurity as rls_enabled,
+    (SELECT COUNT(*) FROM pg_policies WHERE schemaname = pst.schemaname AND tablename = pst.tablename) as policy_count
+FROM pg_stat_user_tables pst
+JOIN pg_class pc ON pc.relname = pst.tablename
+WHERE pc.relrowsecurity = true;
+
+-- コネクション監視
+SELECT 
+    state,
+    COUNT(*) as connection_count,
+    application_name
+FROM pg_stat_activity
+WHERE state IS NOT NULL
+GROUP BY state, application_name
+ORDER BY connection_count DESC;
+
+-- Supabase Edge Functionsのメトリクス（Supabase Dashboardで確認）
+-- APIコール数、レスポンス時間、エラー率など
+```
+
+### Firebase & ChromaDB監視
+```javascript
+// ==================== Firebase Firestore監視 ====================
+// Firebase Consoleでメトリクスを確認
+// - 読み書き操作数
+// - ストレージ使用量
+// - インデックス使用率
+
+// Google Cloud Monitoringで詳細メトリクスを取得
+const monitoring = require('@google-cloud/monitoring');
+const client = new monitoring.MetricServiceClient();
+
+// リード・ライト操作の監視
+const getFirestoreMetrics = async (projectId) => {
+  const request = {
+    name: `projects/${projectId}`,
+    filter: 'metric.type="firestore.googleapis.com/api/request_count"',
+    interval: {
+      endTime: {
+        seconds: Date.now() / 1000,
+      },
+      startTime: {
+        seconds: Date.now() / 1000 - 3600, // 過去1時間
+      },
+    },
+  };
+  
+  const [timeSeries] = await client.listTimeSeries(request);
+  return timeSeries;
+};
+
+// カスタムメトリクスの記録
+const recordCustomMetric = async (metricName, value, labels = {}) => {
+  const projectId = process.env.GOOGLE_CLOUD_PROJECT;
+  
+  const dataPoint = {
+    interval: {
+      endTime: {
+        seconds: Date.now() / 1000,
+      },
+    },
+    value: {
+      doubleValue: value,
+    },
+  };
+  
+  const timeSeriesData = {
+    metric: {
+      type: `custom.googleapis.com/${metricName}`,
+      labels: labels,
+    },
+    resource: {
+      type: 'global',
+      labels: {
+        project_id: projectId,
+      },
+    },
+    points: [dataPoint],
+  };
+  
+  const request = {
+    name: `projects/${projectId}`,
+    timeSeries: [timeSeriesData],
+  };
+  
+  await client.createTimeSeries(request);
+};
+
+// ==================== ChromaDB監視 ====================
+// ChromaDBクライアントでメトリクス取得
+const { ChromaClient } = require('chromadb');
+const chromaClient = new ChromaClient();
+
+// コレクション統計情報
+const getChromaCollectionStats = async (collectionName) => {
+  try {
+    const collection = await chromaClient.getCollection({
+      name: collectionName
+    });
+    
+    const count = await collection.count();
+    console.log(`Collection ${collectionName} has ${count} documents`);
+    
+    return {
+      name: collectionName,
+      documentCount: count,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error(`Error getting stats for collection ${collectionName}:`, error);
+    throw error;
+  }
+};
+
+// ベクトル検索パフォーマンステスト
+const testVectorSearchPerformance = async (collectionName, queryVector, nResults = 10) => {
+  const startTime = Date.now();
+  
+  try {
+    const collection = await chromaClient.getCollection({
+      name: collectionName
+    });
+    
+    const results = await collection.query({
+      queryEmbeddings: [queryVector],
+      nResults: nResults
+    });
+    
+    const endTime = Date.now();
+    const searchTime = endTime - startTime;
+    
+    console.log(`Vector search took ${searchTime}ms for ${nResults} results`);
+    
+    // カスタムメトリクスとして記録
+    await recordCustomMetric('vector_search_latency', searchTime, {
+      collection: collectionName,
+      n_results: nResults.toString()
+    });
+    
+    return {
+      searchTime,
+      resultCount: results.ids[0].length,
+      collection: collectionName
+    };
+  } catch (error) {
+    console.error('Vector search performance test failed:', error);
+    throw error;
+  }
+};
+
+// ヘルスチェック関数
+const performHealthCheck = async () => {
+  const healthStatus = {
+    timestamp: new Date().toISOString(),
+    services: {}
+  };
+  
+  // Firebase Firestoreヘルスチェック
+  try {
+    const testDoc = await db.collection('health').doc('test').get();
+    healthStatus.services.firestore = 'healthy';
+  } catch (error) {
+    healthStatus.services.firestore = 'unhealthy';
+    console.error('Firestore health check failed:', error);
+  }
+  
+  // ChromaDBヘルスチェック
+  try {
+    await chromaClient.heartbeat();
+    healthStatus.services.chromadb = 'healthy';
+  } catch (error) {
+    healthStatus.services.chromadb = 'unhealthy';
+    console.error('ChromaDB health check failed:', error);
+  }
+  
+  return healthStatus;
+};
+```
+
+## 出力形式
+- 最適化されたスキーマ定義
+- 適切なインデックス設計
+- トランザクション処理を含むコード
+- パフォーマンス監視クエリ
+- バックアップ・リカバリ手順
+
+## 追加指示
+- マルチテナント対応を考慮した設計（Supabase RLS、Firebase Security Rules）
+- GDPR/個人情報保護法に準拠したデータ管理
+- Supabase: 定期的なVACUUM/ANALYZE/REINDEX処理、Supabase Edge Functionsでの自動化
+- Firebase: データ保持ポリシーとTTL設定、Firestore削除スケジュール
+- ChromaDB: ベクトルインデックスの最適化、コレクション管理
+- シャーディング戦略の検討（将来の拡張性）
+  - Supabase: PostgreSQL拡張機能、読み取り専用レプリカ
+  - Firebase: 自動スケーリング、マルチリージョン対応
+  - ChromaDB: 分散コレクション、水平スケーリング
+- セキュリティ強化
+  - Supabase: RLS（Row Level Security）の徹底適用
+  - Firebase: Security Rules の適切な設定
+  - ChromaDB: アクセス制御とAPI認証
+- 監査とコンプライアンス
+  - 全データベースでの変更履歴追跡
+  - データアクセスログの記録
+  - 定期的なセキュリティ監査

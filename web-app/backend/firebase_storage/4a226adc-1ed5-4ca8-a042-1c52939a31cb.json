@@ -1,0 +1,13 @@
+{
+  "file_id": "4a226adc-1ed5-4ca8-a042-1c52939a31cb",
+  "content": "# Test Document\n\nThis is a test document for verifying the conversion service.\n\n## Section 1\n- Item 1\n- Item 2\n- Item 3\n\n## Section 2\nSome text content here.\n",
+  "metadata": {
+    "original_filename": "test_document.txt",
+    "converted_filename": "test_document.md",
+    "file_size": 158,
+    "conversion_time": 1755222707.5409923,
+    "is_url": false
+  },
+  "created_at": "2025-08-15T10:51:47.541023",
+  "updated_at": "2025-08-15T10:51:47.541048"
+}

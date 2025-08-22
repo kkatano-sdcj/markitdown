@@ -1,0 +1,6 @@
+@import './styles/globals.css';
+
+.App {
+  min-height: 100vh;
+  background-color: var(--color-gray-50);
+}

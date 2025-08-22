@@ -1,0 +1,13 @@
+{
+  "file_id": "bcdf067c-7a52-4075-ac3f-3d9a1ee28353",
+  "content": "# Image File: test_paddle_text.png\n\n## Image Information\n\n- **Format**: PNG\n- **Mode**: RGB\n- **Size**: 600 x 400 pixels\n\n## File Information\n\n- **File Size**: 27.98 KB\n- **File Path**: test_paddle_text.png\n\n## Text Content (OCR)\n\n### Extracted Text (PaddleOCR):\n\n```\nText detected but confidence too low to extract reliably.\n```\n\n## Image Preview\n\n![Image](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAGQCAIAAAD9V4nPAABvr0lEQVR4nO3dd1wT9/8H8FcgIeyNgCK4EURw4EBFUCvFbeve1tVp...)\n\n*Note: Base64 preview truncated. Full image data available in original file.*\n\n## Alternative Processing (MarkItDown)\n\n*MarkItDown did not extract additional content from this image.*\n",
+  "metadata": {
+    "original_filename": "test_paddle_text.png",
+    "converted_filename": "test_paddle_output.md",
+    "file_size": 28648,
+    "conversion_time": 1755149881.1029,
+    "is_url": false
+  },
+  "created_at": "2025-08-14T14:38:01.102958",
+  "updated_at": "2025-08-14T14:38:01.102983"
+}

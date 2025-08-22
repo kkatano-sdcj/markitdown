@@ -1,0 +1,12 @@
+{
+  "file_id": "7eef8e85-785f-40dc-a96e-657f269aca85",
+  "content": "## Test Sheet\n| Name | Value |\n| --- | --- |\n| Item 1 | 100 |\n| Item 2 | 200 |\n| Item 3 | 300 |",
+  "metadata": {
+    "original_filename": "test_spreadsheet.xlsx",
+    "converted_filename": "test_spreadsheet.md",
+    "file_size": 4896,
+    "conversion_time": 1755223234.4824057
+  },
+  "created_at": "2025-08-15T11:00:34.482414",
+  "updated_at": "2025-08-15T11:00:34.482429"
+}

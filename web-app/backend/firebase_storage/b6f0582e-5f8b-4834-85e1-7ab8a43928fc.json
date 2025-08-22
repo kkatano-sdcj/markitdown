@@ -1,0 +1,13 @@
+{
+  "file_id": "b6f0582e-5f8b-4834-85e1-7ab8a43928fc",
+  "content": "# Image File: test_image.jpg\n\n## Image Information\n\n- **Format**: JPEG\n- **Mode**: RGB\n- **Size**: 200 x 200 pixels\n\n## File Information\n\n- **File Size**: 1.27 KB\n\n## Content\n\n*Note: For OCR (Optical Character Recognition), additional tools like Tesseract are required.*\n*The image has been successfully processed and metadata extracted.*\n",
+  "metadata": {
+    "original_filename": "test_image.jpg",
+    "converted_filename": "test_image_output.md",
+    "file_size": 1305,
+    "conversion_time": 1755140376.7891948,
+    "is_url": false
+  },
+  "created_at": "2025-08-14T11:59:36.789202",
+  "updated_at": "2025-08-14T11:59:36.789218"
+}

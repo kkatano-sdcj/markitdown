@@ -1,0 +1,13 @@
+{
+  "file_id": "d57854b2-a7b1-4495-a375-e3aed7375af9",
+  "content": "# Image File: test_ai_image.png\n\n## Image Information\n\n- **Format**: PNG\n- **Mode**: RGB\n- **Size**: 600 x 400 pixels\n\n## File Information\n\n- **File Size**: 8.29 KB\n- **File Path**: ./uploads/test_ai_image.png\n\n## Text Content (OCR)\n\n### Extracted Text (PaddleOCR):\n\n```\nn [unverified]\na [unverified]\no [unverified]\nt [unverified]\no [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ni [unverified]\ne [unverified]\ne [unverified]\n```\n\n### Detection Confidence:\n\n- **n**: 0.00%\n- **a**: 0.00%\n- **o**: 0.00%\n- **t**: 0.00%\n- **o**: 0.00%\n- **e**: 0.00%\n- **e**: 0.00%\n- **e**: 0.00%\n- **e**: 0.00%\n- **e**: 0.00%\n- *... and 4 more text regions*\n\n## AI Image Analysis\n\n1. **Description of the Image:** The image contains a layout with various text elements and a designated chart area. It appears to be a test for formatting or conversion.\n\n2. **Text Visible in the Image:**\n   - MarkItDown Converter\n   - AI Conversion Mode Test\n   - This is a test image\n   - With multiple lines of text\n   - To test OCR and AI analysis\n   - Chart Area (in blue)\n\n3. **Type of Content:** This is a graphic layout, likely a screenshot or mockup intended for testing purposes.\n\n4. **Key Information or Data Points Shown:** \n   - It indicates the purpose of testing an AI conversion mode.\n   - It includes multiple lines of text demonstrating formatting.\n   - There is a labeled area for a chart, though no data is presented within it.\n\n### Chart/Graph Analysis:\n\nThe image does not contain a chart, graph, or data visualization. Instead, it consists of text indicating that it is a test image for an AI conversion mode. The text includes various lines detailing the purpose of the image.\n\nKey elements present:\n- Title: \"MarkItDown Converter\"\n- Test description: \"AI Conversion Mode Test\"\n- Other lines focusing on testing and analysis.\n\nThere is a label for a \"Chart Area,\" but no actual chart or data points are visible.\n\n## Image Preview\n\n![Image](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAGQCAIAAAD9V4nPAAAg8ElEQVR4nO3df1DUdf7A8Tc/jmX1m7vXnaYo05wWNmauYlMJ7A8M...)\n\n*Note: Base64 preview truncated. Full image data available in original file.*\n\n## Alternative Processing (MarkItDown)\n\n*MarkItDown did not extract additional content from this image.*\n",
+  "metadata": {
+    "original_filename": "test_ai_image.png",
+    "converted_filename": "test_ai_image.md",
+    "file_size": 8489,
+    "conversion_time": 1755222749.0786343,
+    "is_url": false
+  },
+  "created_at": "2025-08-15T10:52:29.078643",
+  "updated_at": "2025-08-15T10:52:29.078773"
+}

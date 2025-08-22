@@ -1,0 +1,12 @@
+{
+  "file_id": "b8f3ae78-8157-40d6-b44e-2df132565057",
+  "content": "<!-- Slide number: 1 -->\n# AI Mode Test Presentation\nTesting MarkItDown with LLM Integration\n\n<!-- Slide number: 2 -->\n# Sample Chart Analysis\n\n![test_chart.png](Picture2.jpg)\nThis chart shows quarterly sales performance\n\n<!-- Slide number: 3 -->\n# Key Findings\n• Sales increased by 25% in Q4\n• Best performance in Q1\n• Need to improve Q3 results",
+  "metadata": {
+    "original_filename": "test_presentation_with_images.pptx",
+    "converted_filename": "test_presentation_with_images.md",
+    "file_size": 32412,
+    "conversion_time": 1755228166.6170616
+  },
+  "created_at": "2025-08-15T12:22:46.617087",
+  "updated_at": "2025-08-15T12:22:46.617110"
+}

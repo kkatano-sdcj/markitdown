@@ -1,0 +1,12 @@
+{
+  "file_id": "e7eafa49-a6da-4b6b-b592-af363178d0a8",
+  "content": "Test Document for Conversion\n\n# Introduction\n\nThis is a test document to verify Word to Markdown conversion quality.\n\n# Features\n\nHere are some formatting examples:\n\nThis text is **bold** and this is *italic*.\n\n## Lists\n\n### Bullet Points\n\n* First item\n* Second item\n* Third item\n\n### Numbered List\n\n1. First step\n2. Second step\n3. Third step\n\n## Table Example\n\n|  |  |  |\n| --- | --- | --- |\n| Column 1 | Column 2 | Column 3 |\n| Data 1 | Data 2 | Data 3 |\n| Data 4 | Data 5 | Data 6 |\n\n## Code Example\n\nHere is a Python function:\n\ndef hello\\_world():\n print(\"Hello, World\\!\")\n return True\n\n# Conclusion\n\nThis document contains various formatting elements for testing conversion quality.",
+  "metadata": {
+    "original_filename": "test_document.docx",
+    "converted_filename": "test_document.md",
+    "file_size": 37241,
+    "conversion_time": 1754555274.1653695
+  },
+  "created_at": "2025-08-07T17:27:54.165378",
+  "updated_at": "2025-08-07T17:27:54.165396"
+}

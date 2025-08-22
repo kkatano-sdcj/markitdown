@@ -1,0 +1,13 @@
+{
+  "file_id": "249e39e3-f8c3-4c37-8038-7ad6aeddfe1f",
+  "content": "# Image File: test_ai_image.png\n\n## Image Information\n\n- **Format**: PNG\n- **Mode**: RGB\n- **Size**: 600 x 400 pixels\n\n## File Information\n\n- **File Size**: 8.29 KB\n- **File Path**: test_ai_image.png\n\n## Text Content (OCR)\n\n### Extracted Text (PaddleOCR):\n\n```\nn [unverified]\na [unverified]\no [unverified]\nt [unverified]\no [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ne [unverified]\ni [unverified]\ne [unverified]\ne [unverified]\n```\n\n## Image Preview\n\n![Image](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAGQCAIAAAD9V4nPAAAg8ElEQVR4nO3df1DUdf7A8Tc/jmX1m7vXnaYo05wWNmauYlMJ7A8M...)\n\n*Note: Base64 preview truncated. Full image data available in original file.*\n\n## Alternative Processing (MarkItDown)\n\n*MarkItDown did not extract additional content from this image.*\n",
+  "metadata": {
+    "original_filename": "test_ai_image.png",
+    "converted_filename": "test_ai_image_normal_test.md",
+    "file_size": 8489,
+    "conversion_time": 1755221113.2386017,
+    "is_url": false
+  },
+  "created_at": "2025-08-15T10:25:13.238613",
+  "updated_at": "2025-08-15T10:25:13.238640"
+}

@@ -1,0 +1,13 @@
+{
+  "file_id": "d0c8bc0d-b522-4718-9bba-e553ee5ccf6a",
+  "content": "# Image File: flowchart.png\n\n## Image Information\n\n- **Format**: PNG\n- **Mode**: P\n- **Size**: 760 x 426 pixels\n\n## File Information\n\n- **File Size**: 25.49 KB\n- **File Path**: ./uploads/flowchart.png\n\n## Text Content (OCR)\n\n*OCR is not available. Install Tesseract to enable text extraction from images.*\n*On Ubuntu/Debian: `sudo apt-get install tesseract-ocr`*\n*On macOS: `brew install tesseract`*\n*On Windows: Download from [GitHub](https://github.com/UB-Mannheim/tesseract/wiki)*\n\n## Image Preview\n\n![Image](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAvgAAAGqCAMAAABJUsCwAAADAFBMVEUoCgUbAgEpHRNhOh8hHjmXvOKjy/B8g5iIc4cWL055osYw...)\n\n*Note: Base64 preview truncated. Full image data available in original file.*\n\n## Alternative Processing (MarkItDown)\n\n*MarkItDown did not extract additional content from this image.*\n",
+  "metadata": {
+    "original_filename": "flowchart.png",
+    "converted_filename": "flowchart.md",
+    "file_size": 26102,
+    "conversion_time": 1755144263.2263658,
+    "is_url": false
+  },
+  "created_at": "2025-08-14T13:04:23.226370",
+  "updated_at": "2025-08-14T13:04:23.226386"
+}

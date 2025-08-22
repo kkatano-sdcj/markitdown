@@ -1,0 +1,13 @@
+{
+  "file_id": "9e94cbf9-8b21-4924-9d9e-e83f08de76fd",
+  "content": "# Image File: test_api_image.png\n\n## Image Information\n\n- **Format**: PNG\n- **Mode**: RGB\n- **Size**: 200 x 100 pixels\n\n## File Information\n\n- **File Size**: 0.33 KB\n- **File Path**: ./uploads/test_api_image.png\n\n## Text Content (OCR)\n\n*OCR is not available. Install Tesseract to enable text extraction from images.*\n*On Ubuntu/Debian: `sudo apt-get install tesseract-ocr`*\n*On macOS: `brew install tesseract`*\n*On Windows: Download from [GitHub](https://github.com/UB-Mannheim/tesseract/wiki)*\n\n## Image Preview\n\n![Image](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABkCAIAAABM5OhcAAABF0lEQVR4nO3SQQkAIADAQLV/Zy3hEOQuwR6be8B963UAfzIWCWOR...)\n\n*Note: Base64 preview truncated. Full image data available in original file.*\n\n## Alternative Processing (MarkItDown)\n\n*MarkItDown did not extract additional content from this image.*\n",
+  "metadata": {
+    "original_filename": "test_api_image.png",
+    "converted_filename": "test_api_image.md",
+    "file_size": 336,
+    "conversion_time": 1755144197.4920092,
+    "is_url": false
+  },
+  "created_at": "2025-08-14T13:03:17.492019",
+  "updated_at": "2025-08-14T13:03:17.492040"
+}
