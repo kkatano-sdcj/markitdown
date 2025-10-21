@@ -1,11 +1,15 @@
 {
   "version": 2,
+  "framework": "create-react-app",
+  "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npm run build",
   "outputDirectory": "build",
-  "devCommand": "npm start",
-  "installCommand": "npm ci",
-  "framework": "create-react-app",
   "regions": ["hnd1"],
+  "functions": {
+    "app/api/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "rewrites": [
     {
       "source": "/((?!api/.*).*)",
@@ -52,18 +56,5 @@
         }
       ]
     }
-  ],
-  "env": {
-    "REACT_APP_API_URL": "@react_app_api_url",
-    "REACT_APP_WS_URL": "@react_app_ws_url",
-    "REACT_APP_ENV": "production"
-  },
-  "build": {
-    "env": {
-      "REACT_APP_API_URL": "@react_app_api_url",
-      "REACT_APP_WS_URL": "@react_app_ws_url",
-      "REACT_APP_ENV": "production",
-      "GENERATE_SOURCEMAP": "false"
-    }
-  }
+  ]
 }
