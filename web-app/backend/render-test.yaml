@@ -1,0 +1,14 @@
+# Render.com テスト用設定（最小限）
+services:
+  - type: web
+    name: markitdown-test-minimal
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: pip install fastapi uvicorn
+    startCommand: python test_minimal.py
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    # ヘルスチェック設定
+    healthCheckPath: /health

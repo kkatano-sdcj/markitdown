@@ -9,7 +9,7 @@ services:
     startCommand: python start.py
     envVars:
       - key: PYTHONPATH
-        value: /opt/render/project/src
+        value: /opt/render/project/src/web-app/backend
       - key: ENVIRONMENT
         value: production
       - key: PYTHONUNBUFFERED
