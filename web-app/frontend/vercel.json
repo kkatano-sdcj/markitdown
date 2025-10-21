@@ -27,7 +27,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.js$",
+      "source": "/(.*).js",
       "headers": [
         {
           "key": "Cache-Control",
@@ -36,7 +36,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.css$",
+      "source": "/(.*).css",
       "headers": [
         {
           "key": "Cache-Control",
@@ -45,7 +45,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.png$",
+      "source": "/(.*).png",
       "headers": [
         {
           "key": "Cache-Control",
@@ -54,7 +54,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.jpg$",
+      "source": "/(.*).jpg",
       "headers": [
         {
           "key": "Cache-Control",
@@ -63,7 +63,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.jpeg$",
+      "source": "/(.*).jpeg",
       "headers": [
         {
           "key": "Cache-Control",
@@ -72,7 +72,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.gif$",
+      "source": "/(.*).gif",
       "headers": [
         {
           "key": "Cache-Control",
@@ -81,7 +81,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.ico$",
+      "source": "/(.*).ico",
       "headers": [
         {
           "key": "Cache-Control",
@@ -90,7 +90,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.svg$",
+      "source": "/(.*).svg",
       "headers": [
         {
           "key": "Cache-Control",
@@ -99,7 +99,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.woff$",
+      "source": "/(.*).woff",
       "headers": [
         {
           "key": "Cache-Control",
@@ -108,7 +108,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.woff2$",
+      "source": "/(.*).woff2",
       "headers": [
         {
           "key": "Cache-Control",
@@ -117,7 +117,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.ttf$",
+      "source": "/(.*).ttf",
       "headers": [
         {
           "key": "Cache-Control",
@@ -126,7 +126,7 @@
       ]
     },
     {
-      "source": "/(.*)\\.eot$",
+      "source": "/(.*).eot",
       "headers": [
         {
           "key": "Cache-Control",
