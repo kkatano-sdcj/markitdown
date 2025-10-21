@@ -1,0 +1,21 @@
+# Render.com デプロイ設定
+services:
+  - type: web
+    name: markitdown-backend
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python start.py
+    envVars:
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+      - key: ENVIRONMENT
+        value: production
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: ALLOWED_ORIGINS
+        value: https://your-frontend-domain.vercel.app
+    # 環境変数（Renderダッシュボードで設定）
+    # - OPENAI_API_KEY: OpenAI APIキー
+    # - FIREBASE_CREDENTIALS_PATH: Firebase認証情報パス（オプション）

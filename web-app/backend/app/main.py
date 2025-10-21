@@ -7,12 +7,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import os
 import logging
-from app.api import conversion, settings, health
-from app.api.websocket import websocket_endpoint
-# Firebase機能が有効になったら有効化
-# from api import storage
-from app.services.config_manager import ConfigManager
-from app.services.conversion_service import ConversionService
+try:
+    # Render.com環境での絶対インポート
+    from app.api import conversion, settings, health
+    from app.api.websocket import websocket_endpoint
+    from app.services.config_manager import ConfigManager
+    from app.services.conversion_service import ConversionService
+except ImportError:
+    # ローカル環境での相対インポート
+    from api import conversion, settings, health
+    from api.websocket import websocket_endpoint
+    from services.config_manager import ConfigManager
+    from services.conversion_service import ConversionService
 
 # ログレベルの設定
 logging.basicConfig(level=logging.INFO)
