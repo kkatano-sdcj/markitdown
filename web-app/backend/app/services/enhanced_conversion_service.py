@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
-from models.data_models import ConversionResult, ConversionStatus
+from app.models.data_models import ConversionResult, ConversionStatus
 from .mock_firebase_service import MockFirebaseService
 from .mock_ocr_service import MockOCRService
 from .paddle_ocr_service import PaddleOCRService

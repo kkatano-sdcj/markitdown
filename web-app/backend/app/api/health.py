@@ -3,7 +3,7 @@
 サービスの稼働状態を確認
 """
 from fastapi import APIRouter
-from models.data_models import HealthCheckResponse
+from app.models.data_models import HealthCheckResponse
 
 router = APIRouter()
 

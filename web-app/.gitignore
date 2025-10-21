@@ -48,3 +48,17 @@ converted/
 
 # OS files
 Thumbs.db
+
+# Production environment files (contains sensitive data)
+backend/.env.production
+frontend/.env.production
+
+# SSL certificates and related files
+certbot/
+
+# Backups
+backups/
+
+# Logs
+logs/
+*.log.*

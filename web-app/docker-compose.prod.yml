@@ -1,0 +1,76 @@
+version: '3.8'
+
+# 本番環境用 Docker Compose 設定
+# フロントエンドはVercelにデプロイされるため、バックエンドとNginx（APIゲートウェイ）のみを運用
+
+services:
+  # Nginxリバースプロキシ（APIゲートウェイ）
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: markitdown-nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # SSL証明書用 (Let's Encryptを使用する場合)
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+      # Nginxログ
+      - ./logs/nginx:/var/log/nginx
+    networks:
+      - markitdown-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # バックエンドサービス
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: markitdown-backend-prod
+    env_file:
+      - ./backend/.env.production
+    environment:
+      - PYTHONUNBUFFERED=1
+      - APP_ENV=production
+      - WORKERS=${WORKERS:-4}
+    volumes:
+      # データ永続化用のボリューム
+      - uploads:/app/uploads
+      - converted:/app/converted
+      - logs:/app/logs
+    networks:
+      - markitdown-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    # リソース制限（必要に応じて調整）
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+
+# 永続化ボリューム
+volumes:
+  uploads:
+    driver: local
+  converted:
+    driver: local
+  logs:
+    driver: local
+
+# ネットワーク設定
+networks:
+  markitdown-network:
+    driver: bridge

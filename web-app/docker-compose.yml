@@ -1,17 +1,24 @@
 version: '3.8'
 
+# 開発環境用 Docker Compose
+# フロントエンドはローカルで npm start を実行してください (Vercel環境に合わせるため)
+# 使い方:
+#   1. docker-compose up -d でバックエンドを起動
+#   2. cd frontend && npm start でフロントエンドを起動
+
 services:
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: markitdown-backend
+    container_name: markitdown-backend-dev
     ports:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
       - ENVIRONMENT=development
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
     volumes:
       - ./backend/app:/app
       - ./backend/uploads:/uploads
@@ -23,23 +30,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: markitdown-frontend
-    ports:
-      - "3000:3000"
-    environment:
-      - REACT_APP_API_URL=http://localhost:8000
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    networks:
-      - markitdown-network
-    depends_on:
-      - backend
 
 networks:
   markitdown-network:

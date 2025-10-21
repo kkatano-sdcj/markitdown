@@ -7,7 +7,7 @@ import time
 import uuid
 from typing import Optional, Dict, Any, List
 from markitdown import MarkItDown
-from models.data_models import ConversionResult, ConversionStatus, FileFormat
+from app.models.data_models import ConversionResult, ConversionStatus, FileFormat
 # Firebase機能（モック実装を使用）
 from .mock_firebase_service import MockFirebaseService
 from .enhanced_conversion_service import EnhancedConversionService

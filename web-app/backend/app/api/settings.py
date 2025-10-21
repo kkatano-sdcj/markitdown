@@ -3,11 +3,11 @@
 OpenAI API設定の管理
 """
 from fastapi import APIRouter, HTTPException
-from models.data_models import (
+from app.models.data_models import (
     APISettings, APIConfigRequest, APITestResult
 )
-from services.api_service import APIService
-from services.config_manager import ConfigManager
+from app.services.api_service import APIService
+from app.services.config_manager import ConfigManager
 import logging
 
 logger = logging.getLogger(__name__)

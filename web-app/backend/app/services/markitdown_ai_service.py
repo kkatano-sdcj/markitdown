@@ -7,8 +7,8 @@ import logging
 from typing import Optional, Dict, Any
 from markitdown import MarkItDown
 from openai import OpenAI
-from models.data_models import ConversionResult, ConversionStatus
-from services.cancel_manager import cancel_manager
+from app.models.data_models import ConversionResult, ConversionStatus
+from app.services.cancel_manager import cancel_manager
 import time
 import uuid
 import asyncio

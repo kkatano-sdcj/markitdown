@@ -1,83 +1,121 @@
-# Markitdown Web Application
+# MarkItDown Web Application
 
-様々な形式のファイル（docx、xlsx、PDF、pptx）をMarkdown形式に変換するWebアプリケーションです。
+様々な形式のファイル（DOCX, XLSX, PDF, PPTXなど）をMarkdown形式に変換するWebアプリケーションです。
 
 ## 機能
 
-- 複数ファイルの一括変換
-- ドラッグ&ドロップによるファイルアップロード
-- OpenAI APIを使用した変換結果の強化（オプション）
-- リアルタイムの変換進捗表示
-- 変換済みファイルのダウンロード
+- ✅ 複数ファイルの一括変換
+- ✅ ドラッグ&ドロップによるファイルアップロード
+- ✅ OpenAI APIを使用した変換結果の強化（オプション）
+- ✅ リアルタイムの変換進捗表示（WebSocket）
+- ✅ 変換済みファイルのダウンロード
+- ✅ YouTube URL変換
+- ✅ 画像OCR（PaddleOCR）
 
 ## アーキテクチャ
 
-このプロジェクトはモノレポ構成で、以下のコンポーネントから構成されています：
+このプロジェクトは**ハイブリッドデプロイ**を採用しています：
 
-- **Backend**: FastAPI (Python) - markitdownライブラリを使用したファイル変換API
-- **Frontend**: React (TypeScript) - ユーザーインターフェース
-- **Infrastructure**: Docker & Docker Compose - コンテナオーケストレーション
+- **Frontend**: React + TypeScript → **Vercelにデプロイ**（グローバルCDN）
+- **Backend**: FastAPI + Python → **Docker運用**（自社サーバー/VPS）
+- **Infrastructure**: Docker & Nginx - バックエンドのみ
 
 ## 必要な環境
 
-- Docker Desktop (Docker & Docker Compose)
+### 開発環境
+- Node.js 18以上
+- Docker & Docker Compose
 - Git
+
+### 本番環境
+- Docker & Docker Compose（バックエンド用）
+- Vercelアカウント（フロントエンド用）
 
 ## セットアップと起動
 
-1. リポジトリをクローン
+### 開発環境
+
+1. **バックエンドの起動**
 ```bash
+# リポジトリをクローン
 cd web-app
-```
 
-2. Docker Composeで起動
-```bash
+# 環境変数を設定
+cp backend/.env.example backend/.env
+
+# Dockerでバックエンドを起動
 docker-compose up -d
+
+# ログを確認
+docker-compose logs -f backend
 ```
 
-3. アプリケーションにアクセス
+2. **フロントエンドの起動**
+```bash
+# フロントエンドディレクトリに移動
+cd frontend
+
+# 依存関係をインストール
+npm install
+
+# 環境変数を設定
+cp .env.example .env.local
+
+# 開発サーバーを起動
+npm start
+```
+
+3. **アクセス**
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
 - API Documentation: http://localhost:8000/docs
 
-## 開発
+## 開発ワークフロー
 
-### 開発モードで起動
+### バックエンド開発
 
 ```bash
-# 開発モードで起動（ホットリロード有効）
-docker-compose up
-
-# バックグラウンドで起動
+# バックエンドを起動
 docker-compose up -d
 
 # ログを確認
-docker-compose logs -f
-
-# 特定のサービスのログを確認
 docker-compose logs -f backend
-docker-compose logs -f frontend
-```
 
-### サービスの再ビルド
-
-```bash
-# 全サービスを再ビルド
-docker-compose build
-
-# 特定のサービスを再ビルド
+# バックエンドを再ビルド
 docker-compose build backend
-docker-compose build frontend
+docker-compose up -d
+
+# バックエンドを停止
+docker-compose down
 ```
 
-### サービスの停止
+### フロントエンド開発
 
 ```bash
-# サービスを停止
-docker-compose down
+# フロントエンドディレクトリに移動
+cd frontend
 
-# ボリュームも含めて削除
-docker-compose down -v
+# 開発サーバーを起動（ホットリロード有効）
+npm start
+
+# ビルドテスト
+npm run build
+
+# テストを実行
+npm test
+```
+
+### デバッグ
+
+```bash
+# バックエンドのログ
+docker-compose logs -f backend
+
+# コンテナに接続
+docker-compose exec backend bash
+
+# フロントエンドのデバッグ
+# ブラウザの開発者ツールを使用
 ```
 
 ## API仕様
@@ -104,56 +142,113 @@ docker-compose down -v
 
 ```
 web-app/
-├── backend/
-│   ├── Dockerfile
+├── backend/                  # FastAPI バックエンド（Docker運用）
+│   ├── Dockerfile           # 開発用
+│   ├── Dockerfile.prod      # 本番用
 │   ├── requirements.txt
 │   └── app/
-│       ├── main.py           # FastAPIアプリケーション
-│       ├── api/              # APIエンドポイント
-│       ├── services/         # ビジネスロジック
-│       └── models/           # データモデル
-├── frontend/
-│   ├── Dockerfile
+│       ├── main.py          # FastAPIアプリケーション
+│       ├── api/             # APIエンドポイント
+│       ├── services/        # ビジネスロジック
+│       └── models/          # データモデル
+├── frontend/                # React フロントエンド（Vercel運用）
 │   ├── package.json
+│   ├── vercel.json          # Vercel設定
 │   └── src/
-│       ├── App.tsx           # メインコンポーネント
-│       ├── components/       # UIコンポーネント
-│       ├── services/         # API通信
-│       └── types/            # TypeScript型定義
-└── docker-compose.yml        # Docker Compose設定
+│       ├── App.tsx          # メインコンポーネント
+│       ├── components/      # UIコンポーネント
+│       ├── services/        # API通信
+│       └── types/           # TypeScript型定義
+├── nginx/                   # Nginxリバースプロキシ（本番のみ）
+├── scripts/                 # デプロイスクリプト
+├── docker-compose.yml       # 開発環境（バックエンドのみ）
+└── docker-compose.prod.yml  # 本番環境（バックエンドのみ）
 ```
 
 ## 環境変数
 
-### Backend
-- `ENVIRONMENT`: 実行環境（development/production）
+### Backend (.env)
+- `APP_ENV`: 実行環境（development/production）
 - `OPENAI_API_KEY`: OpenAI APIキー（オプション）
+- `ALLOWED_ORIGINS`: CORS許可オリジン（開発: http://localhost:3000、本番: Vercelドメイン）
+- `DEBUG`: デバッグモード（true/false）
 
-### Frontend
-- `REACT_APP_API_URL`: Backend APIのURL
+### Frontend (.env.local)
+- `REACT_APP_API_URL`: Backend APIのURL（開発: http://localhost:8000）
+- `REACT_APP_WS_URL`: WebSocket URL（開発: ws://localhost:8000）
+- `REACT_APP_ENV`: 環境（development/production）
+
+詳細は各ディレクトリの `.env.example` を参照してください。
+
+## 本番環境へのデプロイ
+
+詳細は以下のドキュメントを参照してください：
+
+- **クイックスタート**: [QUICK_START.md](QUICK_START.md) - 5分でデプロイ
+- **ハイブリッドデプロイガイド**: [DEPLOYMENT_HYBRID.md](DEPLOYMENT_HYBRID.md) - 詳細な手順
+- **Vercelデプロイガイド**: [frontend/VERCEL_DEPLOYMENT.md](frontend/VERCEL_DEPLOYMENT.md) - フロントエンド専用
+
+### 概要
+
+1. **バックエンド** → Dockerで自社サーバー/VPSにデプロイ
+   ```bash
+   ./scripts/deploy.sh
+   ```
+
+2. **フロントエンド** → Vercelにデプロイ
+   ```bash
+   cd frontend
+   vercel --prod
+   ```
 
 ## トラブルシューティング
 
+### バックエンドが起動しない
+
+```bash
+# ログを確認
+docker-compose logs backend
+
+# コンテナを再起動
+docker-compose restart backend
+
+# 完全にクリーンアップして再起動
+docker-compose down -v
+docker-compose up -d --build
+```
+
+### フロントエンドがAPIに接続できない
+
+1. バックエンドが起動しているか確認
+   ```bash
+   curl http://localhost:8000/health
+   ```
+
+2. `.env.local` の `REACT_APP_API_URL` を確認
+
+3. ブラウザのコンソールでCORSエラーを確認
+   - バックエンドの `ALLOWED_ORIGINS` に `http://localhost:3000` が含まれているか確認
+
 ### ポートが使用中の場合
+
 ```bash
 # 使用中のポートを確認
-lsof -i :3000
-lsof -i :8000
+lsof -i :3000  # フロントエンド
+lsof -i :8000  # バックエンド
 
 # プロセスを終了
 kill -9 <PID>
 ```
 
-### コンテナの再起動
-```bash
-docker-compose restart backend
-docker-compose restart frontend
-```
+## テスト
 
-### ログの確認
 ```bash
-docker-compose logs backend
-docker-compose logs frontend
+# バックエンドのテスト
+docker-compose exec backend pytest
+
+# フロントエンドのテスト
+cd frontend
+npm test
 ```
 
 ## ライセンス

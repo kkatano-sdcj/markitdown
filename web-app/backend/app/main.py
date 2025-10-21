@@ -7,12 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import os
 import logging
-from api import conversion, settings, health
-from api.websocket import websocket_endpoint
+from app.api import conversion, settings, health
+from app.api.websocket import websocket_endpoint
 # Firebase機能が有効になったら有効化
 # from api import storage
-from services.config_manager import ConfigManager
-from services.conversion_service import ConversionService
+from app.services.config_manager import ConfigManager
+from app.services.conversion_service import ConversionService
 
 # ログレベルの設定
 logging.basicConfig(level=logging.INFO)
@@ -52,9 +52,13 @@ app = FastAPI(
 )
 
 # CORS設定
+# 環境変数からオリジンを取得（デフォルトはlocalhost）
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
+allowed_origins = [origin.strip() for origin in allowed_origins if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],  # フロントエンドのURL
+    allow_origins=allowed_origins,  # 環境変数から設定
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

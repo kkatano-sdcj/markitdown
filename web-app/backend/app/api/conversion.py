@@ -7,15 +7,15 @@ import shutil
 from fastapi import APIRouter, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 from typing import List
-from models.data_models import (
+from app.models.data_models import (
     ConversionResult, BatchConversionResult, ConversionStatus
 )
 from pydantic import BaseModel
-from services.conversion_service import ConversionService
-from services.api_service import APIService
-from services.enhanced_conversion_service import EnhancedConversionService
-from api.websocket import manager
-from services.cancel_manager import cancel_manager
+from app.services.conversion_service import ConversionService
+from app.services.api_service import APIService
+from app.services.enhanced_conversion_service import EnhancedConversionService
+from app.api.websocket import manager
+from app.services.cancel_manager import cancel_manager
 import logging
 
 logger = logging.getLogger(__name__)

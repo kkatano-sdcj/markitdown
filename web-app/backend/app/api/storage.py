@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Dict, Any, Optional
-from services.conversion_service import ConversionService
+from app.services.conversion_service import ConversionService
 from pydantic import BaseModel
 import logging
 
